@@ -1,0 +1,164 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  WORKER
+  COMPANY
+  GUESTHOUSEADMIN
+  OWNER
+  BROKER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+  REJECTED
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum JobStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  REFERRAL_REWARD
+  ADJUSTMENT
+}
+
+// prisma/schema.prisma  (additions only)
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  passwordHash      String
+  role              UserRole
+  status            UserStatus        @default(PENDING)
+  verification      VerificationStatus @default(PENDING)
+  referralCode      String?  @unique
+  referredBy        String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  tokenVersion      Int      @default(0) // <— NEW
+
+  workerProfile     Worker?
+  companyProfile    Company?
+  wallet            Wallet?
+  messagesSent      Message[] @relation("SentMessages")
+  messagesReceived  Message[] @relation("ReceivedMessages")
+
+  @@index([referredBy]) // <— NEW
+}
+
+
+model Worker {
+  id             String   @id @default(uuid())
+  user           User     @relation(fields: [userId], references: [id])
+  userId         String   @unique
+  skills         String[]
+  experience     String?
+  licenses       License[]
+  portfolio      String[] // file urls
+  availability   Json?
+  rating         Float?
+  badges         String[]
+
+  applications   WorkerJobApplication[]
+}
+
+model License {
+  id          String   @id @default(uuid())
+  worker      Worker   @relation(fields: [workerId], references: [id])
+  workerId    String
+  name        String
+  issuedAt    DateTime
+  expiresAt   DateTime?
+  documentUrl String
+}
+
+model Company {
+  id          String   @id @default(uuid())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      String   @unique
+  name        String
+  contactInfo String?
+  verificationDocuments String[] // file urls
+  jobs        Job[]
+}
+
+model Job {
+  id            String   @id @default(uuid())
+  title         String
+  description   String
+  requiredSkills String[]
+  location      String?
+  payRate       Float
+  status        JobStatus  @default(OPEN)
+  company       Company    @relation(fields: [companyId], references: [id])
+  companyId     String
+  applications  WorkerJobApplication[]
+  createdAt     DateTime @default(now())
+}
+
+model WorkerJobApplication {
+  id        String   @id @default(uuid())
+  worker    Worker   @relation(fields: [workerId], references: [id])
+  workerId  String
+  job       Job      @relation(fields: [jobId], references: [id])
+  jobId     String
+  status    String   @default("PENDING") // Pending, Accepted, Rejected
+  appliedAt DateTime @default(now())
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @unique
+  balance   Float    @default(0.0)
+  currency  String   @default("USD")
+  transactions Transaction[]
+}
+
+model Transaction {
+  id        String   @id @default(uuid())
+  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  walletId  String
+  type      TransactionType
+  amount    Float
+  createdAt DateTime @default(now())
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId  String
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId String
+  content   String
+  flagged   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
