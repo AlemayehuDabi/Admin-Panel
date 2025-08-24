@@ -1,9 +1,7 @@
-import type React from 'react';
-
 import { useState } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import Input from '../components/ui/Input';
-import Button from '../components/ui/Button';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -40,7 +38,6 @@ export default function Login() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <Input
-              label="Email address"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -48,7 +45,6 @@ export default function Login() {
               placeholder="admin@guesthouse.com"
             />
             <Input
-              label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}

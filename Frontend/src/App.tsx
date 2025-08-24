@@ -1,18 +1,16 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 // import { useAuthStore } from './stores/authStore';
-import Layout from './components/Layout';
+import { Layout } from './components/Layout';
 import Login from './pages/login';
-import Dashboard from './pages/Dashboard';
-import Rooms from './pages/Rooms';
-import Guests from './pages/Guests';
-import Bookings from './pages/Bookings';
-import Payments from './pages/Payments';
+import { Dashboard } from './pages/Dashboard';
+import { UserManagement } from './pages/UserManagement';
+import { WorkerManagement } from './pages/WorkerManagement';
+import { CompanyManagement } from './pages/CompanyManagement';
+import { JobManagement } from './pages/JobManagement';
+import { WalletOverview } from './pages/WalletOverview';
+import { Analytics } from './pages/Analytics';
+import { Toaster } from '@/components/ui/sonner';
 
 const queryClient = new QueryClient();
 
@@ -21,6 +19,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <AppRoutes />
+        <Toaster />
       </Router>
     </QueryClientProvider>
   );
@@ -38,12 +37,13 @@ function AppRoutes() {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/rooms" element={<Rooms />} />
-        <Route path="/guests" element={<Guests />} />
-        <Route path="/bookings" element={<Bookings />} />
-        <Route path="/payments" element={<Payments />} />
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/users" element={<UserManagement />} />
+        <Route path="/workers" element={<WorkerManagement />} />
+        <Route path="/companies" element={<CompanyManagement />} />
+        <Route path="/jobs" element={<JobManagement />} />
+        <Route path="/wallet" element={<WalletOverview />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Routes>
     </Layout>
   );
