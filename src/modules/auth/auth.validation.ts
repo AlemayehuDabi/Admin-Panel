@@ -3,6 +3,9 @@ import { UserRole } from '@/generated/prisma/wasm';
 import e from 'express';
 
 export const authValidationRegisterSchema = z.object({
+    fullName: z.string().min(2).max(100),
+    phone: z.string().min(10).max(15).regex(/^\+?[1-9]\d{1,14}$/, { message: 'Invalid phone number' }),
+    location: z.string().min(2).max(100),
     email: z.email({ message: 'Invalid email address' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
     role: z.enum([UserRole.ADMIN, UserRole.WORKER, UserRole.COMPANY, UserRole.OWNER, UserRole.BROKER], {
