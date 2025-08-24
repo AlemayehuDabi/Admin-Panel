@@ -19,3 +19,8 @@ export const userIdSchema = z.object({
 export const resetPasswordSchema = z.object({
     newPassword: z.string().min(8).max(100),
 });
+
+
+export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
+export type ResetPassword = z.infer<typeof resetPasswordSchema>;
+export type UserId = z.infer<typeof userIdSchema>;

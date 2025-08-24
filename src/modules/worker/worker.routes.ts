@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
+import validate from "@/middlewares/validate";
+import { userIdSchema } from "./worker.validation";
 
 const router = Router();
 
@@ -56,7 +58,7 @@ router.get("/", authenticate, workerController.getAllWorkers);
  *       404:
  *         description: Worker not found
  */
-router.get("/:id", authenticate, workerController.getWorkerById);
+router.get("/:id", validate(userIdSchema, "params"), authenticate, workerController.getWorkerById);
 
 /**
  * @openapi
@@ -82,7 +84,7 @@ router.get("/:id", authenticate, workerController.getWorkerById);
  *       404:
  *         description: Worker not found
  */
-router.patch("/:id/approve", authenticate, workerController.approveWorker);
+router.patch("/:id/approve", validate(userIdSchema, "params"), authenticate, workerController.approveWorker);
 
 /**
  * @openapi
@@ -108,6 +110,6 @@ router.patch("/:id/approve", authenticate, workerController.approveWorker);
  *       404:
  *         description: Worker not found
  */
-router.patch("/:id/reject", authenticate, workerController.rejectWorker);
+router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, workerController.rejectWorker);
 
 export default router;
