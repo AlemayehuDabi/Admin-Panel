@@ -60,3 +60,28 @@ export const approveLicense = async (licenseId: string) => {
     data: { /* optional: you could add a verification field if needed */ },
   });
 };
+
+export const upsertWorkerDetails = async (userId: string, data: any) => {
+  const { skills, portfolio, availability, category, professionalRole, experience } = data;
+
+  return prisma.worker.upsert({
+    where: { userId }, // unique constraint in schema
+    update: {
+      skills,
+      portfolio,
+      availability,
+      category,
+      professionalRole,
+      experience,
+    },
+    create: {
+      userId,
+      skills,
+      portfolio,
+      availability,
+      category,
+      professionalRole,
+      experience,
+    },
+  });
+};

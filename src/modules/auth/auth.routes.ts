@@ -1,5 +1,7 @@
 import { Router } from "express";
 import * as authController from "./auth.controller";
+import validate from "@/middlewares/validate";
+import * as validateSchema from "./auth.validation";
 
 const router = Router();
 
@@ -33,7 +35,7 @@ const router = Router();
  *       400:
  *         description: Bad request / validation error
  */
-router.post("/register", authController.register);
+router.post("/register", validate(validateSchema.authValidationRegisterSchema, "body"), authController.register);
 
 /**
  * @openapi
@@ -63,7 +65,7 @@ router.post("/register", authController.register);
  *       400:
  *         description: Invalid credentials or account not approved
  */
-router.post("/login", authController.login);
+router.post("/login", validate(validateSchema.authValidationLoginSchema, "body"), authController.login);
 
 /**
  * @openapi
@@ -87,7 +89,7 @@ router.post("/login", authController.login);
  *       403:
  *         description: Forbidden — requires admin privileges
  */
-router.post("/approve/:userId", authController.approveUser);
+router.post("/approve/:userId", validate(validateSchema.authValidationApproveUserSchema, "params"), authController.approveUser);
 
 /**
  * @openapi
@@ -111,6 +113,6 @@ router.post("/approve/:userId", authController.approveUser);
  *       403:
  *         description: Forbidden — requires admin privileges
  */
-router.post("/reject/:userId", authController.rejectUser);
+router.post("/reject/:userId", validate(validateSchema.authValidationApproveUserSchema, "params"), authController.rejectUser);
 
 export default router;

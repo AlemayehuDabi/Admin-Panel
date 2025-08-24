@@ -6,7 +6,7 @@ import { ENV } from "../../config/env";
 import { UserStatus, VerificationStatus } from "@generated/prisma";
 
 export const register = async (data: any) => {
-  const { email, password, role } = data;
+  const { fullName, phone, email, password, role, location } = data;
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
@@ -17,9 +17,12 @@ export const register = async (data: any) => {
 
   const user = await prisma.user.create({
     data: {
+      fullName,
+      phone,
       email,
       passwordHash,
       role,
+      location,
       status: UserStatus.PENDING,
       verification: VerificationStatus.PENDING,
       referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
@@ -41,6 +44,11 @@ export const login = async (data: any) => {
   if (user.status === "INACTIVE") throw new Error("Account is deactivated");
   if (user.verification !== "APPROVED")
     throw new Error("Account not verified by admin");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { tokenVersion: 0 },
+  });
 
   // include tokenVersion in the token
   const token = jwt.sign(

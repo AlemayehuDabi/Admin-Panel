@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
+import validate from "@/middlewares/validate";
+import { userIdSchema } from "./worker.validation";
 
 const router = Router();
 
@@ -56,7 +58,7 @@ router.get("/", authenticate, workerController.getAllWorkers);
  *       404:
  *         description: Worker not found
  */
-router.get("/:id", authenticate, workerController.getWorkerById);
+router.get("/:id", validate(userIdSchema, "params"), authenticate, workerController.getWorkerById);
 
 /**
  * @openapi
@@ -82,7 +84,7 @@ router.get("/:id", authenticate, workerController.getWorkerById);
  *       404:
  *         description: Worker not found
  */
-router.patch("/:id/approve", authenticate, workerController.approveWorker);
+router.patch("/:id/approve", validate(userIdSchema, "params"), authenticate, workerController.approveWorker);
 
 /**
  * @openapi
@@ -108,6 +110,79 @@ router.patch("/:id/approve", authenticate, workerController.approveWorker);
  *       404:
  *         description: Worker not found
  */
-router.patch("/:id/reject", authenticate, workerController.rejectWorker);
+router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, workerController.rejectWorker);
+
+/**
+ * @openapi
+ * /worker/{id}/details:
+ *   patch:
+ *     tags:
+ *       - Worker
+ *     summary: Create or update worker profile details (admin)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID for the worker profile
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               skills:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               portfolio:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uri
+ *               availability:
+ *                 type: object
+ *                 properties:
+ *                   days:
+ *                     type: object
+ *                     properties:
+ *                       monday:
+ *                         type: boolean
+ *                       tuesday:
+ *                         type: boolean
+ *                       wednesday:
+ *                         type: boolean
+ *                       thursday:
+ *                         type: boolean
+ *                       friday:
+ *                         type: boolean
+ *                       saturday:
+ *                         type: boolean
+ *                       sunday:
+ *                         type: boolean
+ *                   time:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: [morning, afternoon, evening, night]
+ *               category:
+ *                 type: string
+ *               professionalRole:
+ *                 type: string
+ *               experience:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Worker details upserted successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
+router.patch("/:id/details", validate(userIdSchema, "params"), authenticate, workerController.updateWorkerDetails);
 
 export default router;
