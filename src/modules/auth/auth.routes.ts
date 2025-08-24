@@ -35,7 +35,7 @@ const router = Router();
  *       400:
  *         description: Bad request / validation error
  */
-router.post("/register", validate(validateSchema.authValidationRegisterSchema), authController.register);
+router.post("/register", validate(validateSchema.authValidationRegisterSchema, "body"), authController.register);
 
 /**
  * @openapi
@@ -65,7 +65,7 @@ router.post("/register", validate(validateSchema.authValidationRegisterSchema), 
  *       400:
  *         description: Invalid credentials or account not approved
  */
-router.post("/login", validate(validateSchema.authValidationLoginSchema), authController.login);
+router.post("/login", validate(validateSchema.authValidationLoginSchema, "body"), authController.login);
 
 /**
  * @openapi
@@ -89,7 +89,7 @@ router.post("/login", validate(validateSchema.authValidationLoginSchema), authCo
  *       403:
  *         description: Forbidden — requires admin privileges
  */
-router.post("/approve/:userId", validate(validateSchema.authValidationApproveUserSchema), authController.approveUser);
+router.post("/approve/:userId", validate(validateSchema.authValidationApproveUserSchema, "params"), authController.approveUser);
 
 /**
  * @openapi
@@ -113,6 +113,6 @@ router.post("/approve/:userId", validate(validateSchema.authValidationApproveUse
  *       403:
  *         description: Forbidden — requires admin privileges
  */
-router.post("/reject/:userId", validate(validateSchema.authValidationApproveUserSchema), authController.rejectUser);
+router.post("/reject/:userId", validate(validateSchema.authValidationApproveUserSchema, "params"), authController.rejectUser);
 
 export default router;

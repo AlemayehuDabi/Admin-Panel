@@ -3,7 +3,9 @@ import { Router, Request, Response, NextFunction } from "express";
 import { UserController } from "./user.controller";
 import { authenticate } from "@/middlewares/authMiddleware";
 import { authorize } from "@/middlewares/authorize";
-import { errorResponse } from "@/utils/response";
+import validate from "@/middlewares/validate";
+import * as userValidation from "./user.validation";
+import { userIdSchema } from "./user.validation";
 
 const router = Router();
 
@@ -110,7 +112,7 @@ router.get("/", UserController.list);
  *       200:
  *         description: User activated
  */
-router.patch("/:id/activate", UserController.activate);
+router.patch("/:id/activate", validate(userIdSchema, "params"), UserController.activate);
 
 // PATCH /admin/users/:id/deactivate
 /**
@@ -133,7 +135,7 @@ router.patch("/:id/activate", UserController.activate);
  *       200:
  *         description: User deactivated
  */
-router.patch("/:id/deactivate", UserController.deactivate);
+router.patch("/:id/deactivate", validate(userIdSchema, "params"), UserController.deactivate);
 
 // POST /admin/users/:id/reset-password   { newPassword: string }
 /**
@@ -167,7 +169,7 @@ router.patch("/:id/deactivate", UserController.deactivate);
  *       400:
  *         description: Validation error (e.g. password too short)
  */
-router.post("/:id/reset-password", UserController.resetPassword);
+router.post("/:id/reset-password", validate(userIdSchema, "params"), UserController.resetPassword);
 
 // POST /admin/users/:id/force-logout
 /**
@@ -189,7 +191,7 @@ router.post("/:id/reset-password", UserController.resetPassword);
  *       200:
  *         description: All sessions invalidated
  */
-router.post("/:id/force-logout", UserController.forceLogout);
+router.post("/:id/force-logout", validate(userIdSchema, "params"), UserController.forceLogout);
 
 // POST /admin/users/:id/referral-code/ensure
 /**
@@ -211,7 +213,7 @@ router.post("/:id/force-logout", UserController.forceLogout);
  *       200:
  *         description: Referral code returned
  */
-router.post("/:id/referral-code/ensure", UserController.ensureReferralCode);
+router.post("/:id/referral-code/ensure", validate(userIdSchema, "params"), UserController.ensureReferralCode);
 
 // GET /admin/users/:id/referrals
 /**
@@ -233,7 +235,7 @@ router.post("/:id/referral-code/ensure", UserController.ensureReferralCode);
  *       200:
  *         description: Referred users fetched
  */
-router.get("/:id/referrals", UserController.getReferrals);
+router.get("/:id/referrals", validate(userIdSchema, "params"), UserController.getReferrals);
 
 // GET /admin/users/referral/stats
 /**
