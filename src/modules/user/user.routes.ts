@@ -25,16 +25,10 @@ const router = Router();
  */
 
 // Simple role gate. Assumes authMiddleware sets req.user = { id, role, tokenVersion? }
-function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  const role = (req as any).user?.role;
-  if (role !== "ADMIN") {
-    return errorResponse("Forbidden: admin access only", 403);
-  }
-  next();
-}
+
 
 router.use(authenticate);
-router.use(requireAdmin);
+router.use(authorize("ADMIN"));
 
 // GET /admin/users?email=&role=&status=&verification=&dateFrom=&dateTo=&page=&limit=
 /**

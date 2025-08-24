@@ -7,6 +7,12 @@ import { errorHandler } from "./middlewares/errorHandler";
 // Routes
 import authRoutes from "./modules/auth/auth.routes";
 import userRoutes from "./modules/user/user.routes";
+import companyRoutes from "./modules/company/company.routes";
+import workerRoutes from "./modules/worker/worker.routes";
+import analyticsRoutes from "./modules/analytics/analytics.routes";
+import jobRoutes from "./modules/job/job.routes";
+import walletRoutes from "./modules/wallet/wallet.routes";
+
 
 const app = express();
 
@@ -23,6 +29,11 @@ app.get("/", (req, res) => {
 // Register routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/companies", companyRoutes);
+app.use("/api/workers", workerRoutes);
+app.use("/api/analytics", analyticsRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/wallets", walletRoutes);
 
 // Setup Swagger
 setupSwagger(app);

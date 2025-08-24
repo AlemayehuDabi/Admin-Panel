@@ -42,6 +42,11 @@ export const login = async (data: any) => {
   if (user.verification !== "APPROVED")
     throw new Error("Account not verified by admin");
 
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { tokenVersion: 0 },
+  });
+
   // include tokenVersion in the token
   const token = jwt.sign(
     { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },

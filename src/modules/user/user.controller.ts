@@ -17,7 +17,6 @@ export class UserController {
         page,
         limit,
       } = req.query;
-
       const data = await UserService.listUsers({
         email: email as string | undefined,
         role: role as UserRole | undefined,
@@ -28,10 +27,9 @@ export class UserController {
         page: page ? Number(page) : undefined,
         limit: limit ? Number(limit) : undefined,
       });
-
-      return successResponse(data, "Users fetched");
+      res.json(successResponse(data, "Users fetched"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 
@@ -39,9 +37,9 @@ export class UserController {
     try {
       const { id } = req.params;
       const updated = await UserService.setStatus(id, "ACTIVE");
-      return successResponse(updated, "User activated");
+      res.json(successResponse(updated, "User activated"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 
@@ -49,9 +47,9 @@ export class UserController {
     try {
       const { id } = req.params;
       const updated = await UserService.setStatus(id, "INACTIVE");
-      return successResponse(updated, "User deactivated");
+      res.json(successResponse(updated, "User deactivated"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 
@@ -60,12 +58,12 @@ export class UserController {
       const { id } = req.params;
       const { newPassword } = req.body as { newPassword: string };
       if (!newPassword || newPassword.length < 8) {
-        return errorResponse("Password must be at least 8 characters", 400);
+        res.json(errorResponse("Password must be at least 8 characters", 400));
       }
       await UserService.resetPassword(id, newPassword);
-      return successResponse({ id }, "Password reset and sessions invalidated");
+      res.json(successResponse({ id }, "Password reset and sessions invalidated"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 
@@ -73,9 +71,9 @@ export class UserController {
     try {
       const { id } = req.params;
       await UserService.forceLogout(id);
-      return successResponse({ id }, "All sessions invalidated");
+      res.json(successResponse({ id }, "All sessions invalidated"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 
@@ -83,9 +81,9 @@ export class UserController {
     try {
       const { id } = req.params;
       const code = await UserService.ensureReferralCode(id);
-      return successResponse(code, "Referral code ready");
+      res.json(successResponse(code, "Referral code ready"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 
@@ -93,18 +91,18 @@ export class UserController {
     try {
       const { id } = req.params;
       const data = await UserService.getReferralsByUser(id);
-      return successResponse(data, "Referred users fetched");
+      res.json(successResponse(data, "Referred users fetched"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 
   static async referralStats(req: Request, res: Response, next: NextFunction) {
     try {
       const data = await UserService.getReferralStats();
-      return successResponse(data, "Referral stats fetched");
+      res.json(successResponse(data, "Referral stats fetched"));
     } catch (err) {
-      return next(err);
+      res.json(next(err));
     }
   }
 } 
