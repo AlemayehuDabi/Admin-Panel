@@ -52,46 +52,50 @@ enum TransactionType {
 // prisma/schema.prisma  (additions only)
 
 model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
-  passwordHash      String
-  role              UserRole
-  status            UserStatus        @default(PENDING)
-  verification      VerificationStatus @default(PENDING)
-  referralCode      String?  @unique
-  referredBy        String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  tokenVersion      Int      @default(0) // <— NEW
+  id           String             @id @default(uuid())
+  email        String             @unique
+  phone        String?            @unique
+  passwordHash String
+  role         UserRole
+  status       UserStatus         @default(PENDING)
+  verification VerificationStatus @default(PENDING)
+  referralCode String?            @unique
+  referredBy   String?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  tokenVersion Int                @default(0) // <— NEW
 
-  workerProfile     Worker?
-  companyProfile    Company?
-  wallet            Wallet?
-  messagesSent      Message[] @relation("SentMessages")
-  messagesReceived  Message[] @relation("ReceivedMessages")
+  workerProfile    Worker?
+  companyProfile   Company?
+  wallet           Wallet?
+  messagesSent     Message[] @relation("SentMessages")
+  messagesReceived Message[] @relation("ReceivedMessages")
 
   @@index([referredBy]) // <— NEW
 }
 
-
 model Worker {
-  id             String   @id @default(uuid())
-  user           User     @relation(fields: [userId], references: [id])
-  userId         String   @unique
-  skills         String[]
-  experience     String?
-  licenses       License[]
-  portfolio      String[] // file urls
-  availability   Json?
-  rating         Float?
-  badges         String[]
+  id               String    @id @default(uuid())
+  user             User      @relation(fields: [userId], references: [id])
+  userId           String    @unique
+  location         String?
+  category         String?
+  professionalRole String?
+  skills           String[]
+  workType         String[]
+  experience       String?
+  licenses         License[]
+  portfolio        String[] // file urls
+  availability     Json?
+  rating           Float?
+  badges           String[]
 
-  applications   WorkerJobApplication[]
+  applications WorkerJobApplication[]
 }
 
 model License {
-  id          String   @id @default(uuid())
-  worker      Worker   @relation(fields: [workerId], references: [id])
+  id          String    @id @default(uuid())
+  worker      Worker    @relation(fields: [workerId], references: [id])
   workerId    String
   name        String
   issuedAt    DateTime
@@ -100,27 +104,27 @@ model License {
 }
 
 model Company {
-  id          String   @id @default(uuid())
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String   @unique
-  name        String
-  contactInfo String?
+  id                    String   @id @default(uuid())
+  user                  User     @relation(fields: [userId], references: [id])
+  userId                String   @unique
+  name                  String
+  contactInfo           String?
   verificationDocuments String[] // file urls
-  jobs        Job[]
+  jobs                  Job[]
 }
 
 model Job {
-  id            String   @id @default(uuid())
-  title         String
-  description   String
+  id             String                 @id @default(uuid())
+  title          String
+  description    String
   requiredSkills String[]
-  location      String?
-  payRate       Float
-  status        JobStatus  @default(OPEN)
-  company       Company    @relation(fields: [companyId], references: [id])
-  companyId     String
-  applications  WorkerJobApplication[]
-  createdAt     DateTime @default(now())
+  location       String?
+  payRate        Float
+  status         JobStatus              @default(OPEN)
+  company        Company                @relation(fields: [companyId], references: [id])
+  companyId      String
+  applications   WorkerJobApplication[]
+  createdAt      DateTime               @default(now())
 }
 
 model WorkerJobApplication {
@@ -134,30 +138,30 @@ model WorkerJobApplication {
 }
 
 model Wallet {
-  id        String   @id @default(uuid())
-  user      User     @relation(fields: [userId], references: [id])
-  userId    String   @unique
-  balance   Float    @default(0.0)
-  currency  String   @default("USD")
+  id           String        @id @default(uuid())
+  user         User          @relation(fields: [userId], references: [id])
+  userId       String        @unique
+  balance      Float         @default(0.0)
+  currency     String        @default("USD")
   transactions Transaction[]
 }
 
 model Transaction {
-  id        String   @id @default(uuid())
-  wallet    Wallet   @relation(fields: [walletId], references: [id])
+  id        String          @id @default(uuid())
+  wallet    Wallet          @relation(fields: [walletId], references: [id])
   walletId  String
   type      TransactionType
   amount    Float
-  createdAt DateTime @default(now())
+  createdAt DateTime        @default(now())
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
-  senderId  String
-  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  id         String   @id @default(uuid())
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  senderId   String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
   receiverId String
-  content   String
-  flagged   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  content    String
+  flagged    Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
