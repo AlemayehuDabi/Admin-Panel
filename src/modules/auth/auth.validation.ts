@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserRole } from '@/generated/prisma/wasm';
+import { UserRole } from '@prisma/client';
 import e from 'express';
 
 export const authValidationRegisterSchema = z.object({
