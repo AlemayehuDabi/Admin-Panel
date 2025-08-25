@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import * as workerService from "./worker.service";
-import { successResponse, errorResponse } from "@/utils/response";
+import { successResponse, errorResponse } from "../../utils/response";
 
 // GET all workers (with optional filters)
 export const getAllWorkers = async (req: Request, res: Response) => {
@@ -32,7 +32,7 @@ export const approveWorker = async (req: Request, res: Response) => {
     const worker = await workerService.approveWorker(req.params.id);
     res.json(successResponse(worker));
   } catch (err: any) {
-   res.status(400).json(errorResponse(err.message));
+    res.status(400).json(errorResponse(err.message));
   }
 };
 
@@ -42,7 +42,7 @@ export const rejectWorker = async (req: Request, res: Response) => {
     const worker = await workerService.rejectWorker(req.params.id);
     res.json(successResponse(worker));
   } catch (err: any) {
-   res.status(400).json(errorResponse(err.message));
+    res.status(400).json(errorResponse(err.message));
   }
 };
 
@@ -51,6 +51,6 @@ export const updateWorkerDetails = async (req: Request, res: Response) => {
     const worker = await workerService.upsertWorkerDetails(req.params.id, req.body);
     res.json(successResponse(worker));
   } catch (err: any) {
-   res.status(400).json(errorResponse(err.message));
+    res.status(400).json(errorResponse(err.message));
   }
 };

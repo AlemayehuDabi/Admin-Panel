@@ -16,7 +16,7 @@
     "sourceMap": true,
     "baseUrl": "src",          // ✅ fix here, no extra spaces
     "paths": {
-      "@/*": ["*"],
+      "../../*": ["*"],
     }
   },
   "include": ["src"],

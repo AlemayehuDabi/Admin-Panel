@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
-import validate from "@/middlewares/validate";
+import validate from "../../middlewares/validate";
 import { userIdSchema } from "./worker.validation";
 
 const router = Router();

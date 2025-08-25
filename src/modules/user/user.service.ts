@@ -1,5 +1,5 @@
 // src/modules/user/user.service.ts
-import prisma from "@/config/prisma";
+import prisma from "../../config/prisma";
 import bcrypt from "bcrypt";
 import { UserRole, UserStatus, VerificationStatus } from "@prisma/client";
 import { Prisma } from "@prisma/client";

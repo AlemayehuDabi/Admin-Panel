@@ -1,9 +1,9 @@
 // src/modules/user/user.routes.ts
 import { Router, Request, Response, NextFunction } from "express";
 import { UserController } from "./user.controller";
-import { authenticate } from "@/middlewares/authMiddleware";
-import { authorize } from "@/middlewares/authorize";
-import validate from "@/middlewares/validate";
+import { authenticate } from "../../middlewares/authMiddleware";
+import { authorize } from "../../middlewares/authorize";
+import validate from "../../middlewares/validate";
 import * as userValidation from "./user.validation";
 import { userIdSchema } from "./user.validation";
 

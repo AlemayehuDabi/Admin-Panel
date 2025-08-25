@@ -1,6 +1,6 @@
 // src/modules/user/user.controller.ts
 import { Request, Response, NextFunction } from "express";
-import { successResponse, errorResponse } from "@/utils/response";
+import { successResponse, errorResponse } from "../../utils/response";
 import { UserService } from "./user.service";
 import { UserStatus, UserRole, VerificationStatus } from "@prisma/client";
 
