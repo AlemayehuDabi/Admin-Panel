@@ -2,7 +2,7 @@
 import { Request, Response, NextFunction } from "express";
 import { successResponse, errorResponse } from "@/utils/response";
 import { UserService } from "./user.service";
-import { UserStatus, UserRole, VerificationStatus } from "@prisma/client/prisma";
+import { UserStatus, UserRole, VerificationStatus } from "@prisma/client";
 
 export class UserController {
   static async list(req: Request, res: Response, next: NextFunction) {

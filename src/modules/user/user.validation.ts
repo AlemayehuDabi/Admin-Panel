@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { UserRole, UserStatus, VerificationStatus } from '@prisma/client/prisma';
+import { UserRole, UserStatus, VerificationStatus } from '@prisma/client';
 
 export const listUsersQuerySchema = z.object({
     email: z.email().optional(),
