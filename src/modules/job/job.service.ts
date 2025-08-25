@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { JobStatus } from "@generated/prisma";
+import { JobStatus } from "@prisma/client/prisma";
 
 // Create a new job
 export const createJob = async (data: {

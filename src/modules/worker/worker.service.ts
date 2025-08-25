@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { VerificationStatus, UserStatus } from "@generated/prisma";
+import { VerificationStatus, UserStatus } from "@prisma/client/prisma";
 
 // Get all workers (optionally filter by verification or status)
 export const getAllWorkers = async (filters?: {

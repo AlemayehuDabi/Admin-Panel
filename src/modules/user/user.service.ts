@@ -1,8 +1,8 @@
 // src/modules/user/user.service.ts
 import prisma from "@/config/prisma";
 import bcrypt from "bcrypt";
-import { UserRole, UserStatus, VerificationStatus } from "@generated/prisma";
-import { Prisma } from "@generated/prisma";
+import { UserRole, UserStatus, VerificationStatus } from "@prisma/client/prisma";
+import { Prisma } from "@prisma/client/prisma";
 
 export type ListUsersFilters = {
   email?: string;
@@ -36,11 +36,11 @@ export class UserService {
         verification ? { verification } : undefined,
         dateFrom || dateTo
           ? {
-              createdAt: {
-                gte: dateFrom ? new Date(dateFrom) : undefined,
-                lte: dateTo ? new Date(dateTo) : undefined,
-              },
-            }
+            createdAt: {
+              gte: dateFrom ? new Date(dateFrom) : undefined,
+              lte: dateTo ? new Date(dateTo) : undefined,
+            },
+          }
           : undefined,
       ].filter(Boolean) as Prisma.UserWhereInput[],
     };

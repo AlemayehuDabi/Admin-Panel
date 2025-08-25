@@ -3,7 +3,7 @@ import prisma from "../../config/prisma";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { ENV } from "../../config/env";
-import { UserStatus, VerificationStatus } from "@generated/prisma";
+import { UserStatus, VerificationStatus } from "@prisma/client/prisma";
 
 export const register = async (data: any) => {
   const { fullName, phone, email, password, role, location } = data;

@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { TransactionType } from "@generated/prisma";
+import { TransactionType } from "@prisma/client/prisma";
 
 // Get all wallets with optional filters
 export const getAllWallets = async () => {

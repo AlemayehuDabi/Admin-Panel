@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { UserRole, JobStatus } from "@generated/prisma";
+import { UserRole, JobStatus } from "@prisma/client/prisma";
 
 // Total users by role
 export const getUserStats = async () => {
