@@ -139,4 +139,5 @@ router.patch("/:id/reject", authenticate, validate(companyParamsSchema, "params"
  */
 router.patch("/:id/details", authenticate, validate(companyParamsSchema, "params"), validate(createCompanySchema, "body"), companyController.updateDetail);
 
+
 export default router;

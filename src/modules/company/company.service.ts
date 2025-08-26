@@ -23,22 +23,21 @@ export const getAllCompanies = async (filters?: {
 
 // Get company details by ID
 export const getCompanyById = async (companyId: string) => {
-  return prisma.company.findUnique({
+  return prisma.user.findUnique({
     where: { id: companyId },
     include: {
-      user: true,
-      jobs: true,
+      companyProfile: true,
     },
   });
 };
 
 // Approve a company
 export const approveCompany = async (companyId: string) => {
-  const company = await prisma.company.findUnique({ where: { id: companyId } });
+  const company = await prisma.user.findUnique({ where: { id: companyId } });
   if (!company) throw new Error("Company not found");
 
   return prisma.user.update({
-    where: { id: company.userId },
+    where: { id: companyId },
     data: {
       verification: VerificationStatus.APPROVED,
       status: UserStatus.ACTIVE,
@@ -48,11 +47,11 @@ export const approveCompany = async (companyId: string) => {
 
 // Reject a company
 export const rejectCompany = async (companyId: string) => {
-  const company = await prisma.company.findUnique({ where: { id: companyId } });
+  const company = await prisma.user.findUnique({ where: { id: companyId } });
   if (!company) throw new Error("Company not found");
 
   return prisma.user.update({
-    where: { id: company.userId },
+    where: { id: companyId },
     data: {
       verification: VerificationStatus.REJECTED,
       status: UserStatus.REJECTED,
@@ -62,15 +61,16 @@ export const rejectCompany = async (companyId: string) => {
 
 // Update company detail
 export const updateDetail = async (companyId: string, data: Partial<Company>) => {
-  const company = await prisma.user.findUnique({ where: { id: companyId } });
-  if (!company) throw new Error("Company not found");
-
+  const user = await prisma.user.findUnique({ where: { id: companyId } });
+  if (!user) throw new Error("Company not found");
+  if (user.role !== "COMPANY") throw new Error("User is not a company");
   return prisma.company.upsert({
-    where: { id: companyId },
+    where: { userId: companyId },  // ✅ match on unique userId
     create: {
       userId: companyId,
       ...data,
     },
     update: data,
   });
-}
+};
+
