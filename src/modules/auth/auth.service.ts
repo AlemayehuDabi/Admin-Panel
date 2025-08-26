@@ -60,6 +60,35 @@ export const login = async (data: any) => {
   return { token, user };
 };
 
+export const workerLogin = async (data: any) => {
+  const { email, password } = data;
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw new Error("Invalid email or password");
+  const worker = await prisma.worker.findUnique({ where: { userId: user.id }, include: { user: true } });
+
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) throw new Error("Invalid email or password");
+
+  if (user.status === "INACTIVE") throw new Error("Account is deactivated");
+  if (user.verification !== "APPROVED")
+    throw new Error("Account not verified by admin");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { tokenVersion: 0 },
+  });
+
+  // include tokenVersion in the token
+  const token = jwt.sign(
+    { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },
+    ENV.JWT_SECRET,
+    { expiresIn: "7d" }
+  );
+
+  return { token, worker };
+};
+
 export const approveUser = async (userId: string) => {
   return prisma.user.update({
     where: { id: userId },

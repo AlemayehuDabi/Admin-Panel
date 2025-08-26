@@ -62,7 +62,7 @@ export const approveLicense = async (licenseId: string) => {
 };
 
 export const upsertWorkerDetails = async (userId: string, data: any) => {
-  const { skills, portfolio, availability, category, professionalRole, experience } = data;
+  const { skills = [""], portfolio = [""], availability = {}, category = "", professionalRole = "", experience = "" } = data;
 
   return prisma.worker.upsert({
     where: { userId }, // unique constraint in schema
@@ -85,3 +85,4 @@ export const upsertWorkerDetails = async (userId: string, data: any) => {
     },
   });
 };
+

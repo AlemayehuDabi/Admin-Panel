@@ -1,5 +1,6 @@
 import prisma from "../../config/prisma";
 import { VerificationStatus, UserStatus } from "@prisma/client";
+import { Company } from "../../generated/prisma";
 
 // Get all companies (optional filters)
 export const getAllCompanies = async (filters?: {
@@ -58,3 +59,18 @@ export const rejectCompany = async (companyId: string) => {
     },
   });
 };
+
+// Update company detail
+export const updateDetail = async (companyId: string, data: Partial<Company>) => {
+  const company = await prisma.user.findUnique({ where: { id: companyId } });
+  if (!company) throw new Error("Company not found");
+
+  return prisma.company.upsert({
+    where: { id: companyId },
+    create: {
+      userId: companyId,
+      ...data,
+    },
+    update: data,
+  });
+}

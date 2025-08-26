@@ -51,12 +51,21 @@ router.post("/register", validate(validateSchema.authValidationRegisterSchema, "
  *           schema:
  *             type: object
  *             required:
+ *               - fullName
+ *               - phone
  *               - email
+ *               - location
  *               - password
  *             properties:
+ *               fullName:
+ *                 type: string
+ *               phone:
+ *                 type: string
  *               email:
  *                 type: string
  *                 format: email
+ *               location:
+ *                 type: string
  *               password:
  *                 type: string
  *     responses:
@@ -66,6 +75,45 @@ router.post("/register", validate(validateSchema.authValidationRegisterSchema, "
  *         description: Invalid credentials or account not approved
  */
 router.post("/login", validate(validateSchema.authValidationLoginSchema, "body"), authController.login);
+
+/**
+ * @openapi
+ * /auth/worker/login:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Login a worker and return a JWT token
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fullName
+ *               - phone
+ *               - email
+ *               - location
+ *               - password
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               location:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful — returns token and worker profile
+ *       400:
+ *         description: Invalid credentials or account not approved
+ */
+router.post("/worker/login", validate(validateSchema.authValidationLoginSchema, "body"), authController.workerLogin);
 
 /**
  * @openapi

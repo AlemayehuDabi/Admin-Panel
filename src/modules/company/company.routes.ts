@@ -1,6 +1,9 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
+import validate from "../../middlewares/validate";
 import * as companyController from "./company.controller";
+import { companyParamsSchema, createCompanySchema, getAllCompaniesSchema } from "./company.validation";
+
 
 const router = Router();
 
@@ -30,7 +33,7 @@ const router = Router();
  *       401:
  *         description: Unauthorized
  */
-router.get("/", authenticate, companyController.getAllCompanies);
+router.get("/", authenticate, validate(getAllCompaniesSchema, "query"), companyController.getAllCompanies);
 
 /**
  * @openapi
@@ -56,7 +59,7 @@ router.get("/", authenticate, companyController.getAllCompanies);
  *       404:
  *         description: Company not found
  */
-router.get("/:id", authenticate, companyController.getCompanyById);
+router.get("/:id", authenticate, validate(companyParamsSchema, "params"), companyController.getCompanyById);
 
 /**
  * @openapi
@@ -82,7 +85,7 @@ router.get("/:id", authenticate, companyController.getCompanyById);
  *       404:
  *         description: Company not found
  */
-router.patch("/:id/approve", authenticate, companyController.approveCompany);
+router.patch("/:id/approve", authenticate, validate(companyParamsSchema, "params"), companyController.approveCompany);
 
 /**
  * @openapi
@@ -108,6 +111,32 @@ router.patch("/:id/approve", authenticate, companyController.approveCompany);
  *       404:
  *         description: Company not found
  */
-router.patch("/:id/reject", authenticate, companyController.rejectCompany);
+router.patch("/:id/reject", authenticate, validate(companyParamsSchema, "params"), companyController.rejectCompany);
+
+/**
+ * @openapi
+ * /company/{id}:
+ *   patch:
+ *     tags:
+ *       - Company
+ *     summary: Update company details (admin)
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Company ID to update
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Company details updated
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Company not found
+ */
+router.patch("/:id/details", authenticate, validate(companyParamsSchema, "params"), validate(createCompanySchema, "body"), companyController.updateDetail);
 
 export default router;

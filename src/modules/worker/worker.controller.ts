@@ -26,6 +26,8 @@ export const getWorkerById = async (req: Request, res: Response) => {
   }
 };
 
+
+
 // PATCH approve worker
 export const approveWorker = async (req: Request, res: Response) => {
   try {

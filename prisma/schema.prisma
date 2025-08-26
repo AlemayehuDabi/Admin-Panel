@@ -52,36 +52,38 @@ enum TransactionType {
 // prisma/schema.prisma  (additions only)
 
 model User {
-  id           String             @id @default(uuid())
-  fullName     String
-  email        String             @unique
-  phone        String?            @unique
-  passwordHash String
-  location     String?
-  role         UserRole
-  status       UserStatus         @default(PENDING)
-  verification VerificationStatus @default(PENDING)
-  referralCode String?            @unique
-  referredBy   String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  tokenVersion Int                @default(0) // <— NEW
+  id               String             @id @default(uuid())
+  fullName         String
+  email            String             @unique
+  phone            String?            @unique
+  passwordHash     String
+  location         String?
+  role             UserRole
+  status           UserStatus         @default(PENDING)
+  verification     VerificationStatus @default(PENDING)
+  referralCode     String?            @unique
+  referredBy       String?
+
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  tokenVersion     Int                @default(0) // <— NEW
 
   workerProfile    Worker?
   companyProfile   Company?
   wallet           Wallet?
-  messagesSent     Message[] @relation("SentMessages")
-  messagesReceived Message[] @relation("ReceivedMessages")
+  messagesSent     Message[]          @relation("SentMessages")
+  messagesReceived Message[]          @relation("ReceivedMessages")
 
   @@index([referredBy]) // <— NEW
 }
 
 model Worker {
-  id               String    @id @default(uuid())
-  user             User      @relation(fields: [userId], references: [id])
-  userId           String    @unique
+  id               String                 @id @default(uuid())
+  user             User                   @relation(fields: [userId], references: [id])
+  userId           String                 @unique
   category         String?
   professionalRole String?
+  profilePhoto     String?
   skills           String[]
   workType         String[]
   experience       String?
@@ -90,9 +92,9 @@ model Worker {
   portfolio        String[] // file urls
   availability     Json?
   rating           Float?
+  ratingCount      Int                    @default(0)
   badges           String[]
-
-  applications WorkerJobApplication[]
+  applications     WorkerJobApplication[]
 }
 
 model License {
@@ -109,8 +111,8 @@ model Company {
   id                    String   @id @default(uuid())
   user                  User     @relation(fields: [userId], references: [id])
   userId                String   @unique
-  name                  String
-  contactInfo           String?
+  companyLogo           String?
+  businessLocation      String?
   verificationDocuments String[] // file urls
   jobs                  Job[]
 }

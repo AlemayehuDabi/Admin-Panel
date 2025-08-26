@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
 import validate from "../../middlewares/validate";
-import { userIdSchema } from "./worker.validation";
+import { userIdSchema, workerDetailsSchema } from "./worker.validation";
 
 const router = Router();
 
@@ -183,6 +183,6 @@ router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, work
  *       401:
  *         description: Unauthorized
  */
-router.patch("/:id/details", validate(userIdSchema, "params"), authenticate, workerController.updateWorkerDetails);
+router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDetailsSchema, "body"), authenticate, workerController.updateWorkerDetails);
 
 export default router;

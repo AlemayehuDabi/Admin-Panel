@@ -3,29 +3,29 @@ import z from "zod";
 
 
 export const userIdSchema = z.object({
-    userId: z.uuid()
+  id: z.uuid("Invalid User Id or Not Found")
 });
 
 
 export const workerDetailsSchema = z.object({
   skills: z.array(z.string()).optional(),
-// URLs to files
-availability: z.object({
+  // URLs to files
+  availability: z.object({
     days: z.object({
-        monday: z.boolean().optional(),
-        tuesday: z.boolean().optional(),
-        wednesday: z.boolean().optional(),
-        thursday: z.boolean().optional(),
-        friday: z.boolean().optional(),
-        saturday: z.boolean().optional(),
-        sunday: z.boolean().optional(),
+      monday: z.boolean().optional(),
+      tuesday: z.boolean().optional(),
+      wednesday: z.boolean().optional(),
+      thursday: z.boolean().optional(),
+      friday: z.boolean().optional(),
+      saturday: z.boolean().optional(),
+      sunday: z.boolean().optional(),
     }).optional(),
     time: z.array(z.enum(["morning", "afternoon", "evening", "night"])).optional(),
-}).optional(),
+  }).optional(),
   category: z.string().optional(),
   professionalRole: z.string().optional(),
   experience: z.string().optional(),
-});
+}, "No Worker Details Provided");
 
 
 

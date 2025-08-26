@@ -44,3 +44,13 @@ export const rejectCompany = async (req: Request, res: Response) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+// PATCH update company detail
+export const updateDetail = async (req: Request, res: Response) => {
+  try {
+    const company = await companyService.updateDetail(req.params.id, req.body);
+    res.json(company);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};

@@ -20,6 +20,15 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+export const workerLogin = async (req: Request, res: Response) => {
+  try {
+    const token = await authService.workerLogin(req.body);
+    res.json(successResponse(token, "Login successful"));
+  } catch (error: any) {
+    res.status(400).json(errorResponse(error.message));
+  }
+};
+
 export const approveUser = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
