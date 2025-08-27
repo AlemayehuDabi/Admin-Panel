@@ -21,6 +21,16 @@ export const getWalletByUserId = async (req: Request, res: Response) => {
   }
 };
 
+// POST create wallet
+export const createWallet = async (req: Request, res: Response) => {
+  try {
+    const wallet = await walletService.createWallet(req.params.userId);
+    res.status(201).json(wallet);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
 // PATCH adjust wallet balance (admin)
 export const adjustWalletBalance = async (req: Request, res: Response) => {
   try {

@@ -52,27 +52,27 @@ enum TransactionType {
 // prisma/schema.prisma  (additions only)
 
 model User {
-  id               String             @id @default(uuid())
-  fullName         String
-  email            String             @unique
-  phone            String?            @unique
-  passwordHash     String
-  location         String?
-  role             UserRole
-  status           UserStatus         @default(PENDING)
-  verification     VerificationStatus @default(PENDING)
-  referralCode     String?            @unique
-  referredBy       String?
+  id           String             @id @default(uuid())
+  fullName     String
+  email        String             @unique
+  phone        String?            @unique
+  passwordHash String
+  location     String?
+  role         UserRole
+  status       UserStatus         @default(PENDING)
+  verification VerificationStatus @default(PENDING)
+  referralCode String?            @unique
+  referredBy   String?
 
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
-  tokenVersion     Int                @default(0) // <— NEW
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tokenVersion Int      @default(0) // <— NEW
 
   workerProfile    Worker?
   companyProfile   Company?
   wallet           Wallet?
-  messagesSent     Message[]          @relation("SentMessages")
-  messagesReceived Message[]          @relation("ReceivedMessages")
+  messagesSent     Message[] @relation("SentMessages")
+  messagesReceived Message[] @relation("ReceivedMessages")
 
   @@index([referredBy]) // <— NEW
 }
@@ -101,7 +101,7 @@ model License {
   id          String    @id @default(uuid())
   worker      Worker    @relation(fields: [workerId], references: [id])
   workerId    String
-  name        String
+  name        String?
   issuedAt    DateTime
   expiresAt   DateTime?
   documentUrl String
@@ -127,6 +127,8 @@ model Job {
   status         JobStatus              @default(OPEN)
   company        Company                @relation(fields: [companyId], references: [id])
   companyId      String
+
+  //
   applications   WorkerJobApplication[]
   createdAt      DateTime               @default(now())
 }
@@ -146,7 +148,7 @@ model Wallet {
   user         User          @relation(fields: [userId], references: [id])
   userId       String        @unique
   balance      Float         @default(0.0)
-  currency     String        @default("USD")
+  currency     String        @default("ETB")
   transactions Transaction[]
 }
 

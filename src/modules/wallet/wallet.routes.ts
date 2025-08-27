@@ -49,6 +49,32 @@ router.get("/:userId", authenticate, walletController.getWalletByUserId);
 
 /**
  * @openapi
+ * /wallet/{userId}/create:
+ *   post:
+ *     tags:
+ *       - Wallet
+ *     summary: Create a wallet for a user (admin)
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID for whom to create the wallet
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Wallet created successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/:userId/create", authenticate, walletController.createWallet);
+
+/**
+ * @openapi
  * /wallet/{userId}/adjust:
  *   patch:
  *     tags:
