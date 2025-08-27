@@ -86,3 +86,45 @@ export const upsertWorkerDetails = async (userId: string, data: any) => {
   });
 };
 
+export async function getCategories() {
+  return prisma.category.findMany()
+}
+
+export async function getRoles() {
+  return prisma.role.findMany({
+    include: { category: true }
+  })
+}
+
+export async function getRolesByCategory(categoryId: string) {
+  return prisma.role.findMany({
+    where: { categoryId },
+    include: { category: true }
+  })
+}
+
+export async function getSpecialities() {
+  return prisma.speciality.findMany({
+    include: { role: true }
+  })
+}
+
+export async function getSpecialitiesByRoleId(roleId: string) {
+  return prisma.speciality.findMany({
+    where: { roleId },
+    include: { role: true }
+  })
+}
+
+export async function getWorkTypes() {
+  return prisma.workType.findMany({
+    include: { speciality: true }
+  })
+}
+
+export async function getWorkTypesBySpecialityId(specialityId: string) {
+  return prisma.workType.findMany({
+    where: { specialityId },
+    include: { speciality: true }
+  })
+}

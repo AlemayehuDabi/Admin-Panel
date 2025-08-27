@@ -6,6 +6,18 @@ export const userIdSchema = z.object({
   id: z.uuid("Invalid User Id or Not Found")
 });
 
+export const categoryIdSchema = z.object({
+  id: z.uuid("Invalid Category Id or Not Found")
+});
+
+export const roleIdSchema = z.object({
+  id: z.uuid("Invalid Role Id or Not Found")
+});
+
+export const specialityIdSchema = z.object({
+  id: z.uuid("Invalid Speciality Id or Not Found")
+});
+
 
 export const workerDetailsSchema = z.object({
   skills: z.array(z.string()).optional(),

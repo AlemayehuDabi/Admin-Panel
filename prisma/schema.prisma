@@ -71,9 +71,6 @@ model User {
   workerProfile    Worker?
   companyProfile   Company?
   wallet           Wallet?
-  messagesSent     Message[] @relation("SentMessages")
-  messagesReceived Message[] @relation("ReceivedMessages")
-
   @@index([referredBy]) // <— NEW
 }
 
@@ -93,6 +90,9 @@ model Worker {
   availability     Json?
   rating           Float?
   ratingCount      Int                    @default(0)
+    // relations
+  specialities    WorkerSpeciality[]
+  workTypes       WorkerWorkType[]  
   badges           String[]
   applications     WorkerJobApplication[]
 }
@@ -161,13 +161,57 @@ model Transaction {
   createdAt DateTime        @default(now())
 }
 
-model Message {
-  id         String   @id @default(uuid())
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
-  senderId   String
-  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  receiverId String
-  content    String
-  flagged    Boolean  @default(false)
-  createdAt  DateTime @default(now())
+model Category {
+  id    String  @id @default(uuid())
+  name  String  @unique
+
+  roles Role[]
+}
+
+model Role {
+  id          String       @id @default(uuid())
+  name        String
+  categoryId  String
+  category    Category     @relation(fields: [categoryId], references: [id])
+
+  specialities Speciality[]
+}
+
+model Speciality {
+  id      String    @id @default(uuid())
+  name    String
+  roleId  String
+  role    Role      @relation(fields: [roleId], references: [id])
+
+  workTypes   WorkType[]
+  workers     WorkerSpeciality[]
+}
+
+model WorkType {
+  id           String    @id @default(uuid())
+  name         String
+  specialityId String
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+
+  workers      WorkerWorkType[]
+}
+
+model WorkerSpeciality {
+  workerId     String
+  specialityId String
+
+  worker       Worker     @relation(fields: [workerId], references: [id])
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+
+  @@id([workerId, specialityId]) // composite primary key
+}
+
+model WorkerWorkType {
+  workerId   String
+  workTypeId String
+
+  worker     Worker   @relation(fields: [workerId], references: [id])
+  workType   WorkType @relation(fields: [workTypeId], references: [id])
+
+  @@id([workerId, workTypeId])
 }

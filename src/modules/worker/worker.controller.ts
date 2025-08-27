@@ -56,3 +56,41 @@ export const updateWorkerDetails = async (req: Request, res: Response) => {
     res.status(400).json(errorResponse(err.message));
   }
 };
+
+export const getCategoriesController = async (req: Request, res: Response) => {
+  const categories = await workerService.getCategories()
+  res.json(categories)
+}
+
+export const getRolesController = async (req: Request, res: Response) => {
+  const roles = await workerService.getRoles()
+  res.json(roles)
+}
+
+export const getRolesByCategoryController = async (req: Request, res: Response) => {
+  const { categoryId } = req.params;
+  const roles = await workerService.getRolesByCategory(categoryId);
+  res.json(roles);
+};
+
+export const getSpecialitiesController = async (req: Request, res: Response) => {
+  const specialities = await workerService.getSpecialities()
+  res.json(specialities)
+}
+
+export const getSpecialitiesByRoleIdController = async (req: Request, res: Response) => {
+  const { roleId } = req.params;
+  const specialities = await workerService.getSpecialitiesByRoleId(roleId);
+  res.json(specialities);
+}
+
+export const getWorkTypesController = async (req: Request, res: Response) => {
+  const workTypes = await workerService.getWorkTypes()
+  res.json(workTypes)
+}
+
+export const getWorkTypesBySpecialityIdController = async (req: Request, res: Response) => {
+  const { specialityId } = req.params;
+  const workTypes = await workerService.getWorkTypesBySpecialityId(specialityId);
+  res.json(workTypes);
+}

@@ -2,9 +2,149 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
 import validate from "../../middlewares/validate";
-import { userIdSchema, workerDetailsSchema } from "./worker.validation";
+import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema } from "./worker.validation";
 
 const router = Router();
+
+/**
+ * @openapi
+ * /worker/categories:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get all worker categories
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of worker categories
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/categories", workerController.getCategoriesController);
+
+/**
+ * @openapi
+ * /worker/roles:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get all worker roles
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of worker roles
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/roles", workerController.getRolesController);
+
+/**
+ * @openapi
+ * /worker/specialities:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get all worker specialities
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of worker specialities
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/specialities", workerController.getSpecialitiesController);
+
+/**
+ * @openapi
+ * /worker/work-types:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get all worker work types
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of worker work types
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/work-types", workerController.getWorkTypesController);
+
+/**
+ * @openapi
+ * /worker/roles/{categoryId}:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get all worker roles by category
+ *     parameters:
+ *       - in: path
+ *         name: categoryId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Category ID
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of worker roles by category
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/roles/:categoryId", validate(categoryIdSchema, "params"), workerController.getRolesByCategoryController);
+
+/**
+ * @openapi
+ * /worker/specialities/{roleId}:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get all worker specialities by role
+ *     parameters:
+ *       - in: path
+ *         name: roleId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Role ID
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of worker specialities by role
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/specialities/:roleId", validate(roleIdSchema, "params"), workerController.getSpecialitiesByRoleIdController);
+
+/**
+ * @openapi
+ * /worker/work-types/{specialityId}:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get all worker work types by speciality
+ *     parameters:
+ *       - in: path
+ *         name: specialityId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Speciality ID
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of worker work types by speciality
+ *       401:
+ *         description: Unauthorized
+ */
+router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), workerController.getWorkTypesBySpecialityIdController);
 
 /**
  * @openapi
@@ -184,5 +324,6 @@ router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, work
  *         description: Unauthorized
  */
 router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDetailsSchema, "body"), authenticate, workerController.updateWorkerDetails);
+
 
 export default router;
