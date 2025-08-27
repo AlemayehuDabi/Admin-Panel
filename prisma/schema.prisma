@@ -68,9 +68,10 @@ model User {
   updatedAt    DateTime @updatedAt
   tokenVersion Int      @default(0) // <— NEW
 
-  workerProfile    Worker?
-  companyProfile   Company?
-  wallet           Wallet?
+  workerProfile  Worker?
+  companyProfile Company?
+  wallet         Wallet?
+
   @@index([referredBy]) // <— NEW
 }
 
@@ -90,9 +91,9 @@ model Worker {
   availability     Json?
   rating           Float?
   ratingCount      Int                    @default(0)
-    // relations
-  specialities    WorkerSpeciality[]
-  workTypes       WorkerWorkType[]  
+  // relations
+  specialities     WorkerSpeciality[]
+  workTypes        WorkerWorkType[]
   badges           String[]
   applications     WorkerJobApplication[]
 }
@@ -118,19 +119,19 @@ model Company {
 }
 
 model Job {
-  id             String                 @id @default(uuid())
+  id             String    @id @default(uuid())
   title          String
   description    String
   requiredSkills String[]
   location       String?
   payRate        Float
-  status         JobStatus              @default(OPEN)
-  company        Company                @relation(fields: [companyId], references: [id])
+  status         JobStatus @default(OPEN)
+  company        Company   @relation(fields: [companyId], references: [id])
   companyId      String
 
   //
-  applications   WorkerJobApplication[]
-  createdAt      DateTime               @default(now())
+  applications WorkerJobApplication[]
+  createdAt    DateTime               @default(now())
 }
 
 model WorkerJobApplication {
@@ -162,46 +163,50 @@ model Transaction {
 }
 
 model Category {
-  id    String  @id @default(uuid())
-  name  String  @unique
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
 
   roles Role[]
 }
 
 model Role {
-  id          String       @id @default(uuid())
-  name        String
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
   categoryId  String
-  category    Category     @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id])
 
   specialities Speciality[]
 }
 
 model Speciality {
-  id      String    @id @default(uuid())
-  name    String
-  roleId  String
-  role    Role      @relation(fields: [roleId], references: [id])
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  roleId      String
+  role        Role    @relation(fields: [roleId], references: [id])
 
-  workTypes   WorkType[]
-  workers     WorkerSpeciality[]
+  workTypes WorkType[]
+  workers   WorkerSpeciality[]
 }
 
 model WorkType {
-  id           String    @id @default(uuid())
-  name         String
+  id           String     @id @default(uuid())
+  name         String     @unique
+  description  String?
   specialityId String
   speciality   Speciality @relation(fields: [specialityId], references: [id])
 
-  workers      WorkerWorkType[]
+  workers WorkerWorkType[]
 }
 
 model WorkerSpeciality {
   workerId     String
   specialityId String
 
-  worker       Worker     @relation(fields: [workerId], references: [id])
-  speciality   Speciality @relation(fields: [specialityId], references: [id])
+  worker     Worker     @relation(fields: [workerId], references: [id])
+  speciality Speciality @relation(fields: [specialityId], references: [id])
 
   @@id([workerId, specialityId]) // composite primary key
 }
@@ -210,8 +215,8 @@ model WorkerWorkType {
   workerId   String
   workTypeId String
 
-  worker     Worker   @relation(fields: [workerId], references: [id])
-  workType   WorkType @relation(fields: [workTypeId], references: [id])
+  worker   Worker   @relation(fields: [workerId], references: [id])
+  workType WorkType @relation(fields: [workTypeId], references: [id])
 
   @@id([workerId, workTypeId])
 }

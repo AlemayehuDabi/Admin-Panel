@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
 import validate from "../../middlewares/validate";
-import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema } from "./worker.validation";
+import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType } from "./worker.validation";
 
 const router = Router();
 
@@ -146,6 +146,9 @@ router.get("/specialities/:roleId", validate(roleIdSchema, "params"), workerCont
  */
 router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), workerController.getWorkTypesBySpecialityIdController);
 
+
+
+
 /**
  * @openapi
  * /worker/categories:
@@ -171,7 +174,7 @@ router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), 
  *       401:
  *         description: Unauthorized
  */
-router.post("/categories", workerController.createCategoryController);
+router.post("/categories", validate(createCategory, "body"), workerController.createCategoryController);
 
 /**
  * @openapi
@@ -201,7 +204,7 @@ router.post("/categories", workerController.createCategoryController);
  *       401:
  *         description: Unauthorized
  */
-router.post("/roles", workerController.createRoleController);
+router.post("/roles", validate(createRole, "body"), workerController.createRoleController);
 
 /**
  * @openapi
@@ -231,7 +234,7 @@ router.post("/roles", workerController.createRoleController);
  *       401:
  *         description: Unauthorized
  */
-router.post("/specialities", workerController.createSpecialityController);
+router.post("/specialities", validate(createSpeciality, "body"), workerController.createSpecialityController);
 
 /**
  * @openapi
@@ -261,7 +264,10 @@ router.post("/specialities", workerController.createSpecialityController);
  *       401:
  *         description: Unauthorized
  */
-router.post("/work-types", workerController.createWorkTypeController);
+router.post("/work-types", validate(createWorkType, "body"), workerController.createWorkTypeController);
+
+
+
 
 /**
  * @openapi

@@ -129,29 +129,35 @@ export async function getWorkTypesBySpecialityId(specialityId: string) {
   })
 }
 
-export const createCategory = async (name: string) => {
+export const createCategory = async (name: string, description: string) => {
+  const exists = await prisma.category.findUnique({ where: { name } });
+  if (exists) throw new Error("Category already exists");
+
   return prisma.category.create({
-    data: { name }
+    data: { name, description }
   })
 }
 
-// application/usecases/CreateRole.ts
-export const createRole = async (name: string, categoryId: string) => {
+export const createRole = async (name: string, description: string, categoryId: string) => {
+  const exists = await prisma.role.findUnique({ where: { name } });
+  if (exists) throw new Error("Role already exists");
+
   return prisma.role.create({
-    data: { name, categoryId }
+    data: { name, description, categoryId }
   })
 }
 
-// application/usecases/CreateSpeciality.ts
-export const createSpeciality = async (name: string, roleId: string) => {
+export const createSpeciality = async (name: string, description: string, roleId: string) => {
+  const exists = await prisma.speciality.findUnique({ where: { name } });
+  if (exists) throw new Error("Speciality already exists");
+
   return prisma.speciality.create({
-    data: { name, roleId }
+    data: { name, description, roleId }
   })
 }
 
-// application/usecases/CreateWorkType.ts
-export const createWorkType = async (name: string, specialityId: string) => {
+export const createWorkType = async (name: string, description: string, specialityId: string) => {
   return prisma.workType.create({
-    data: { name, specialityId }
+    data: { name, description, specialityId }
   })
 }

@@ -29,29 +29,29 @@ export const getWorkerById = async (req: Request, res: Response) => {
 
 // POST /categories
 export const createCategoryController = async (req: Request, res: Response) => {
-  const { name } = req.body
-  const category = await workerService.createCategory(name)
+  const { name, description } = req.body
+  const category = await workerService.createCategory(name, description)
   res.status(201).json(category)
 }
 
 // POST /roles
 export const createRoleController = async (req: Request, res: Response) => {
-  const { name, categoryId } = req.body
-  const role = await workerService.createRole(name, categoryId)
+  const { name, description, categoryId } = req.body
+  const role = await workerService.createRole(name, description, categoryId)
   res.status(201).json(role)
 }
 
 // POST /specialities
 export const createSpecialityController = async (req: Request, res: Response) => {
-  const { name, roleId } = req.body
-  const speciality = await workerService.createSpeciality(name, roleId)
+  const { name, description, roleId } = req.body
+  const speciality = await workerService.createSpeciality(name, description, roleId)
   res.status(201).json(speciality)
 }
 
 // POST /work-types
 export const createWorkTypeController = async (req: Request, res: Response) => {
-  const { name, specialityId } = req.body
-  const workType = await workerService.createWorkType(name, specialityId)
+  const { name, description, specialityId } = req.body
+  const workType = await workerService.createWorkType(name, description, specialityId)
   res.status(201).json(workType)
 }
 

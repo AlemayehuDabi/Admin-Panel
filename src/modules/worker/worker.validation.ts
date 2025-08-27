@@ -39,7 +39,27 @@ export const workerDetailsSchema = z.object({
   experience: z.string().optional(),
 }, "No Worker Details Provided");
 
+export const createCategory = z.object({
+  name: z.string().min(2).max(100),
+  description: z.string().min(10).max(500).optional(),
+});
 
+export const createRole = z.object({
+  name: z.string().min(2).max(100),
+  description: z.string().min(10).max(500).optional(),
+  categoryId: z.uuid("Invalid Category Id or Not Found"),
+});
 
+export const createSpeciality = z.object({
+  name: z.string().min(2).max(100),
+  description: z.string().min(10).max(500).optional(),
+  roleId: z.uuid("Invalid Role Id or Not Found"),
+});
+
+export const createWorkType = z.object({
+  name: z.string().min(2).max(100),
+  description: z.string().min(10).max(500).optional(),
+  specialityId: z.uuid("Invalid Speciality Id or Not Found"),
+});
 
 export type UserId = z.infer<typeof userIdSchema>;
