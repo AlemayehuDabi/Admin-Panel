@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
 import validate from "../../middlewares/validate";
-import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType } from "./worker.validation";
+import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType, workerRegistrationSchema } from "./worker.validation";
 
 const router = Router();
 
@@ -448,5 +448,9 @@ router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, work
  */
 router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDetailsSchema, "body"), authenticate, workerController.updateWorkerDetails);
 
+/**
+ * 
+ */
+router.post("/workerRegister", validate(workerRegistrationSchema, "body"), workerController.registerWorker)
 
 export default router;

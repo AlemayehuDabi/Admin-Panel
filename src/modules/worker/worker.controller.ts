@@ -26,6 +26,15 @@ export const getWorkerById = async (req: Request, res: Response) => {
   }
 };
 
+// POST /register
+export const registerWorker = async (req: Request, res: Response) => {
+  try{
+    const newWorker = await workerService.workerRegister(req.body);
+    res.status(201).json(successResponse(newWorker));
+  } catch (err: any) {
+    res.status(400).json(errorResponse(err.message));
+  }
+}
 
 // POST /categories
 export const createCategoryController = async (req: Request, res: Response) => {

@@ -18,6 +18,26 @@ export const specialityIdSchema = z.object({
   id: z.uuid("Invalid Speciality Id or Not Found")
 });
 
+export const workerRegistrationSchema = z.object({
+  // User info
+  fullName: z.string().min(2, "Full name is required"),
+  email: z.email("Invalid email"),
+  phone: z.string().optional(),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  role: z.string().min(1, "Role is required"),
+
+  // Worker profile
+  category: z.string().min(1, "Category is required"),
+  professionalRole: z.string().min(1, "Professional role is required"),
+  skills: z.array(z.string()).nonempty("At least one skill required"),
+  portfolio: z.array(z.string().url("Portfolio must be valid URL")).optional(),
+  availability: z.record(z.string(), z.string()).optional(), // flexible JSON object
+  experience: z.string().optional(),
+
+  // Relations
+  specialityIds: z.array(z.uuid("Invalid speciality id")).nonempty("Select at least one speciality"),
+  workTypeIds: z.array(z.uuid("Invalid work type id")).nonempty("Select at least one work type"),
+});
 
 export const workerDetailsSchema = z.object({
   skills: z.array(z.string()).optional(),
@@ -63,3 +83,4 @@ export const createWorkType = z.object({
 });
 
 export type UserId = z.infer<typeof userIdSchema>;
+export type WorkerRegistrationInput = z.infer<typeof workerRegistrationSchema>;

@@ -1,5 +1,6 @@
 import prisma from "../../config/prisma";
 import { VerificationStatus, UserStatus } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 // Get all workers (optionally filter by verification or status)
 export const getAllWorkers = async (filters?: {
@@ -29,6 +30,60 @@ export const getWorkerById = async (workerId: string) => {
       licenses: true,
     },
   });
+};
+
+export const workerRegister = async (data: any) => {
+  const { fullName, email, phone, password, role, location, skills, portfolio, availability, experience, specialityIds, workTypeIds } = data;
+  const passwordHash = await bcrypt.hash(password, 10);
+  const newWorkerUser = await prisma.user.create({
+  data: {
+    fullName,
+    email,
+    phone,
+    passwordHash,
+    role,
+    location,
+    status: "PENDING",
+    verification: "PENDING",
+    referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+
+    workerProfile: {
+      create: {
+        category: "Plumbing", // if you want free text OR store categoryId
+        professionalRole: "Pipe Fitter",
+        skills,
+        portfolio,
+        availability,
+        experience,
+
+        // Specialities (many-to-many through WorkerSpeciality)
+        specialities: {
+          create: (specialityIds || []).map((specialityId: string) => ({
+            speciality: { connect: { id: specialityId } },
+          })),
+        },
+
+        // Work Types (many-to-many through WorkerWorkType)
+        workTypes: {
+          create: (workTypeIds || []).map((workTypeId: string) => ({
+            workType: { connect: { id: workTypeId } },
+          })),
+        },
+      },
+    },
+  },
+  include: {
+    workerProfile: {
+      include: {
+        specialities: { include: { speciality: true } },
+        workTypes: { include: { workType: true } },
+      },
+    },
+  },
+});
+
+return newWorkerUser;
+
 };
 
 // Approve a worker (set verification to APPROVED)
