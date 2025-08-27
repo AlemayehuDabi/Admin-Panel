@@ -148,6 +148,123 @@ router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), 
 
 /**
  * @openapi
+ * /worker/categories:
+ *   post:
+ *     tags:
+ *       - Worker
+ *     summary: Create a new category
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Category name
+ *     responses:
+ *       201:
+ *         description: Category created successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/categories", workerController.createCategoryController);
+
+/**
+ * @openapi
+ * /worker/roles:
+ *   post:
+ *     tags:
+ *       - Worker
+ *     summary: Create a new role
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Role name
+ *               categoryId:
+ *                 type: string
+ *                 description: Category ID
+ *     responses:
+ *       201:
+ *         description: Role created successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/roles", workerController.createRoleController);
+
+/**
+ * @openapi
+ * /worker/specialities:
+ *   post:
+ *     tags:
+ *       - Worker
+ *     summary: Create a new speciality
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Speciality name
+ *               roleId:
+ *                 type: string
+ *                 description: Role ID
+ *     responses:
+ *       201:
+ *         description: Speciality created successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/specialities", workerController.createSpecialityController);
+
+/**
+ * @openapi
+ * /worker/work-types:
+ *   post:
+ *     tags:
+ *       - Worker
+ *     summary: Create a new work type
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Work type name
+ *               specialityId:
+ *                 type: string
+ *                 description: Speciality ID
+ *     responses:
+ *       201:
+ *         description: Work type created successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.post("/work-types", workerController.createWorkTypeController);
+
+/**
+ * @openapi
  * /worker:
  *   get:
  *     tags:

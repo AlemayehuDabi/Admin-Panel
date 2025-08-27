@@ -128,3 +128,30 @@ export async function getWorkTypesBySpecialityId(specialityId: string) {
     include: { speciality: true }
   })
 }
+
+export const createCategory = async (name: string) => {
+  return prisma.category.create({
+    data: { name }
+  })
+}
+
+// application/usecases/CreateRole.ts
+export const createRole = async (name: string, categoryId: string) => {
+  return prisma.role.create({
+    data: { name, categoryId }
+  })
+}
+
+// application/usecases/CreateSpeciality.ts
+export const createSpeciality = async (name: string, roleId: string) => {
+  return prisma.speciality.create({
+    data: { name, roleId }
+  })
+}
+
+// application/usecases/CreateWorkType.ts
+export const createWorkType = async (name: string, specialityId: string) => {
+  return prisma.workType.create({
+    data: { name, specialityId }
+  })
+}

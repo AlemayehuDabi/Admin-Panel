@@ -27,6 +27,34 @@ export const getWorkerById = async (req: Request, res: Response) => {
 };
 
 
+// POST /categories
+export const createCategoryController = async (req: Request, res: Response) => {
+  const { name } = req.body
+  const category = await workerService.createCategory(name)
+  res.status(201).json(category)
+}
+
+// POST /roles
+export const createRoleController = async (req: Request, res: Response) => {
+  const { name, categoryId } = req.body
+  const role = await workerService.createRole(name, categoryId)
+  res.status(201).json(role)
+}
+
+// POST /specialities
+export const createSpecialityController = async (req: Request, res: Response) => {
+  const { name, roleId } = req.body
+  const speciality = await workerService.createSpeciality(name, roleId)
+  res.status(201).json(speciality)
+}
+
+// POST /work-types
+export const createWorkTypeController = async (req: Request, res: Response) => {
+  const { name, specialityId } = req.body
+  const workType = await workerService.createWorkType(name, specialityId)
+  res.status(201).json(workType)
+}
+
 
 // PATCH approve worker
 export const approveWorker = async (req: Request, res: Response) => {
@@ -94,3 +122,4 @@ export const getWorkTypesBySpecialityIdController = async (req: Request, res: Re
   const workTypes = await workerService.getWorkTypesBySpecialityId(specialityId);
   res.json(workTypes);
 }
+

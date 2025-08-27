@@ -1,6 +1,6 @@
 import prisma from "../../config/prisma";
 import { VerificationStatus, UserStatus } from "@prisma/client";
-import { Company } from "../../generated/prisma";
+import { Company } from "@prisma/client";
 
 // Get all companies (optional filters)
 export const getAllCompanies = async (filters?: {
