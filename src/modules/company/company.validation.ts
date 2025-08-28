@@ -26,7 +26,7 @@ export const companyParamsSchema = z.object({
 export const approveRejectCompanySchema = companyParamsSchema;
 
 // Minimal create/update company payload
-export const createCompanySchema = z.object({
+export const updateCompanySchema = z.object({
     companyLogo: z
         .union([z.url("Invalid company logo URL"), z.literal("")])
         .optional()
@@ -45,6 +45,28 @@ export const createCompanySchema = z.object({
         .nullable(),
 }, "No data is provided"
 );
+
+export const createCompanySchema = z.object({
+    fullName: z.string().min(2).max(100),
+    phone: z.string().min(10).max(15),
+    email: z.email(),
+    password: z.string().min(6).max(100),
+    location: z.string().min(2).max(100),
+    companyLogo: z
+        .union([z.url("Invalid company logo URL"), z.literal("")])
+        .optional()
+        .nullable(),
+    businessLocation: z
+        .union([z.string(), z.literal("")])
+        .optional()
+        .nullable(),
+    verificationDocuments: z
+        .array(
+            z.union([z.url("Invalid verification document URL"), z.literal("")])
+        )
+        .optional()
+        .nullable(),
+});
 
 // Exported TS types
 export type GetAllCompaniesInput = z.infer<typeof getAllCompaniesSchema>;

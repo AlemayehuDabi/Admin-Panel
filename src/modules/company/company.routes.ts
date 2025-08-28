@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import validate from "../../middlewares/validate";
 import * as companyController from "./company.controller";
-import { companyParamsSchema, createCompanySchema, getAllCompaniesSchema } from "./company.validation";
+import { companyParamsSchema, createCompanySchema, getAllCompaniesSchema, updateCompanySchema } from "./company.validation";
 
 
 const router = Router();
@@ -60,6 +60,52 @@ router.get("/", authenticate, validate(getAllCompaniesSchema, "query"), companyC
  *         description: Company not found
  */
 router.get("/:id", authenticate, validate(companyParamsSchema, "params"), companyController.getCompanyById);
+
+/**
+ * @openapi
+ * /company/register:
+ *   post:
+ *     tags:
+ *       - Company
+ *     summary: Register a new company
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               location:
+ *                 type: string
+ *               companyLogo:
+ *                 type: string
+ *               businessLocation:
+ *                 type: string
+ *               verificationDocuments:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *             required:
+ *               - fullName
+ *               - phone
+ *               - email
+ *               - password
+ *               - location
+ *     responses:
+ *       201:
+ *         description: Company registered successfully
+ *       400:
+ *         description: Bad request (e.g. validation errors, user already exists)
+ */
+router.post("/register", validate(createCompanySchema, "body"), companyController.createCompany);
 
 /**
  * @openapi
@@ -137,7 +183,7 @@ router.patch("/:id/reject", authenticate, validate(companyParamsSchema, "params"
  *       404:
  *         description: Company not found
  */
-router.patch("/:id/details", authenticate, validate(companyParamsSchema, "params"), validate(createCompanySchema, "body"), companyController.updateDetail);
+router.patch("/:id/details", authenticate, validate(companyParamsSchema, "params"), validate(updateCompanySchema, "body"), companyController.updateDetail);
 
 
 export default router;

@@ -3,13 +3,36 @@ import * as workerService from "./worker.service";
 import { successResponse, errorResponse } from "../../utils/response";
 
 // GET all workers (with optional filters)
-export const getAllWorkers = async (req: Request, res: Response) => {
+export const getWorkers = async (req: Request, res: Response) => {
   try {
-    const { status, verification } = req.query;
-    const workers = await workerService.getAllWorkers({
-      status: status as any,
-      verification: verification as any,
+    const {
+      categoryId,
+      roleId,
+      specialtyId,
+      workTypeId,
+      title,
+      jobLocation,
+      payRate,
+      jobType,
+      startDate,
+      requiredSkills,
+    } = req.query;
+
+    const workers = await workerService.filterWorkers({
+      categoryId: categoryId as string,
+      roleId: roleId as string,
+      specialtyId: specialtyId as string,
+      workTypeId: workTypeId as string,
+      title: title as string,
+      jobLocation: jobLocation as string,
+      payRate: payRate ? Number(payRate) : undefined,
+      jobType: jobType as string,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      requiredSkills: requiredSkills
+        ? (requiredSkills as string).split(",")
+        : undefined,
     });
+
     res.json(successResponse(workers));
   } catch (err: any) {
     res.status(400).json(errorResponse(err.message));

@@ -82,5 +82,19 @@ export const createWorkType = z.object({
   specialityId: z.uuid("Invalid Speciality Id or Not Found"),
 });
 
+export const workerSchema = z.object({
+  userId: z.string().uuid(),
+  category: z.string().optional(),
+  professionalRole: z.string().optional(),
+  profilePhoto: z.string().url().optional(),
+  skills: z.array(z.string()).default([]),
+  workType: z.array(z.string()).default([]),
+  experience: z.string().optional(),
+  nationalIdUrl: z.string().url().optional(),
+  portfolio: z.array(z.string().url()).default([]),
+  availability: z.record(z.string(), z.unknown()).optional(), // since Prisma uses Json
+  badges: z.array(z.string()).default([]),
+});
+
 export type UserId = z.infer<typeof userIdSchema>;
 export type WorkerRegistrationInput = z.infer<typeof workerRegistrationSchema>;

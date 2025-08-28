@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
 import validate from "../../middlewares/validate";
-import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType, workerRegistrationSchema } from "./worker.validation";
+import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType, workerRegistrationSchema, workerSchema } from "./worker.validation";
 
 const router = Router();
 
@@ -268,7 +268,6 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
 
 
 
-
 /**
  * @openapi
  * /worker:
@@ -287,6 +286,61 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *         schema:
  *           type: string
  *         description: Filter by verification status (e.g. APPROVED, PENDING)
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filter by worker category
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *         description: Filter by professional role
+ *       - in: query
+ *         name: specialty
+ *         schema:
+ *           type: string
+ *         description: Filter by worker specialty
+ *       - in: query
+ *         name: workType
+ *         schema:
+ *           type: string
+ *         description: Filter by preferred work type (e.g. Remote, Onsite, Hybrid)
+ *       - in: query
+ *         name: title
+ *         schema:
+ *           type: string
+ *         description: Filter by job title
+ *       - in: query
+ *         name: jobLocation
+ *         schema:
+ *           type: string
+ *         description: Filter by job location
+ *       - in: query
+ *         name: payRate
+ *         schema:
+ *           type: number
+ *         description: Filter by pay rate (minimum or exact depending on logic)
+ *       - in: query
+ *         name: jobType
+ *         schema:
+ *           type: string
+ *         description: Filter by job type (e.g. Full-time, Part-time, Contract)
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter by job start date
+ *       - in: query
+ *         name: requiredSkills
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         style: form
+ *         explode: true
+ *         description: Filter by required skills (multiple values allowed)
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -295,7 +349,8 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *       401:
  *         description: Unauthorized
  */
-router.get("/", authenticate, workerController.getAllWorkers);
+
+router.get("/", authenticate, validate(workerSchema, "query"), workerController.getWorkers);
 
 /**
  * @openapi

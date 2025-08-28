@@ -66,6 +66,19 @@ export class UserController {
       res.json(next(err));
     }
   }
+  
+  static async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const user = await UserService.getUserById(id);
+      if (!user) {
+        return res.json(errorResponse("User not found", 404));
+      }
+      res.json(successResponse(user, "User fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
 
   static async forceLogout(req: Request, res: Response, next: NextFunction) {
     try {

@@ -29,7 +29,7 @@ app.get("/", (req, res) => {
 // Register routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/companies", companyRoutes);
+app.use("/api/company", companyRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/jobs", jobRoutes);

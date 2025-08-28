@@ -22,9 +22,15 @@ const router = Router();
  *               - email
  *               - password
  *             properties:
+ *               fullName:
+ *                 type: string
+ *               phone:
+ *                 type: string
  *               email:
  *                 type: string
  *                 format: email
+ *               location:
+ *                 type: string
  *               password:
  *                 type: string
  *               role:
@@ -51,21 +57,12 @@ router.post("/register", validate(validateSchema.authValidationRegisterSchema, "
  *           schema:
  *             type: object
  *             required:
- *               - fullName
- *               - phone
  *               - email
- *               - location
  *               - password
  *             properties:
- *               fullName:
- *                 type: string
- *               phone:
- *                 type: string
  *               email:
  *                 type: string
  *                 format: email
- *               location:
- *                 type: string
  *               password:
  *                 type: string
  *     responses:
@@ -90,21 +87,12 @@ router.post("/login", validate(validateSchema.authValidationLoginSchema, "body")
  *           schema:
  *             type: object
  *             required:
- *               - fullName
- *               - phone
  *               - email
- *               - location
  *               - password
  *             properties:
- *               fullName:
- *                 type: string
- *               phone:
- *                 type: string
  *               email:
  *                 type: string
  *                 format: email
- *               location:
- *                 type: string
  *               password:
  *                 type: string
  *     responses:

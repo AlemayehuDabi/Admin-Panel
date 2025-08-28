@@ -55,3 +55,13 @@ export const updateDetail = async (req: Request, res: Response) => {
   }
 };
 
+// POST create company
+export const createCompany = async (req: Request, res: Response) => {
+  try {
+    const company = await companyService.registerCompany(req.body);
+    res.status(201).json(company);
+  } catch (err: any) {
+    res.status(400).json({ message: err.message });
+  }
+};
+

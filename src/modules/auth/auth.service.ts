@@ -8,9 +8,9 @@ import { UserStatus, VerificationStatus } from "@prisma/client";
 export const register = async (data: any) => {
   const { fullName, phone, email, password, role, location } = data;
 
-  const existingUser = await prisma.user.findUnique({ where: { email } });
+  const existingUser = await prisma.user.findUnique({ where: { email } }) || await prisma.user.findUnique({ where: { phone } });
   if (existingUser) {
-    throw new Error("User already exists with this email");
+    throw new Error("User already exists with this email or phone number");
   }
 
   const passwordHash = await bcrypt.hash(password, 10);

@@ -3,20 +3,48 @@ import { VerificationStatus, UserStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 // Get all workers (optionally filter by verification or status)
-export const getAllWorkers = async (filters?: {
-  verification?: VerificationStatus;
-  status?: UserStatus;
-}) => {
+interface WorkerFilter {
+  categoryId?: string;
+  roleId?: string;
+  specialtyId?: string;
+  workTypeId?: string;
+  title?: string;
+  jobLocation?: string;
+  payRate?: number;
+  jobType?: string;
+  startDate?: Date;
+  requiredSkills?: string[];
+}
+
+export const filterWorkers = async (filters: WorkerFilter) => {
   return prisma.worker.findMany({
     where: {
-      user: {
-        verification: filters?.verification,
-        status: filters?.status,
-      },
+      ...(filters.categoryId && { categoryId: filters.categoryId }),
+      ...(filters.roleId && { roleId: filters.roleId }),
+      ...(filters.specialtyId && {
+        specialties: { some: { specialtyId: filters.specialtyId } },
+      }),
+      ...(filters.workTypeId && {
+        workTypes: { some: { workTypeId: filters.workTypeId } },
+      }),
+      ...(filters.title && { title: { contains: filters.title, mode: "insensitive" } }),
+      ...(filters.jobLocation && {
+        jobLocation: { contains: filters.jobLocation, mode: "insensitive" },
+      }),
+      ...(filters.payRate && { payRate: { gte: filters.payRate } }),
+      ...(filters.jobType && { jobType: filters.jobType }),
+      ...(filters.startDate && { startDate: { gte: filters.startDate } }),
+      ...(filters.requiredSkills && filters.requiredSkills.length > 0 && {
+        requiredSkills: {
+          hasSome: filters.requiredSkills, // assuming it's a string[] column
+        },
+      }),
     },
     include: {
-      user: true,
-      licenses: true,
+      category: true,
+      Role: true,
+      specialities: { include: { speciality: true } },
+      workTypes: { include: { workType: true } },
     },
   });
 };
@@ -33,7 +61,7 @@ export const getWorkerById = async (workerId: string) => {
 };
 
 export const workerRegister = async (data: any) => {
-  const { fullName, email, phone, password, role, location, skills, portfolio, availability, experience, specialityIds, workTypeIds } = data;
+  const { fullName, email, phone, password, role, location, skills, portfolio, availability, experience, categoryId, roleId, specialityIds, workTypeIds } = data;
   const passwordHash = await bcrypt.hash(password, 10);
   const newWorkerUser = await prisma.user.create({
   data: {
@@ -49,7 +77,8 @@ export const workerRegister = async (data: any) => {
 
     workerProfile: {
       create: {
-        category: "Plumbing", // if you want free text OR store categoryId
+        categoryId: categoryId, 
+        Role: roleId,
         professionalRole: "Pipe Fitter",
         skills,
         portfolio,

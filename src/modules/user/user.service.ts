@@ -103,6 +103,22 @@ export class UserService {
     return { success: true };
   }
 
+  static async getUserById(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        verification: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return user;
+  }
+
   static async forceLogout(userId: string) {
     await prisma.user.update({
       where: { id: userId },

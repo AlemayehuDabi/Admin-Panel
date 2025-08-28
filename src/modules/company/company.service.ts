@@ -1,6 +1,7 @@
 import prisma from "../../config/prisma";
 import { VerificationStatus, UserStatus } from "@prisma/client";
 import { Company } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 // Get all companies (optional filters)
 export const getAllCompanies = async (filters?: {
@@ -29,6 +30,44 @@ export const getCompanyById = async (companyId: string) => {
       companyProfile: true,
     },
   });
+};
+
+// Register a company
+export const registerCompany = async (data: any) => {
+  const { fullName, phone, email, password, location, companyLogo, businessLocation, verificationDocuments } = data;
+  
+  const existingUser = await prisma.user.findUnique({ where: { email } }) || await prisma.user.findUnique({ where: { phone } });
+  if (existingUser) {
+    throw new Error("User already exists with this email or phone number");
+  }
+
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  const company = await prisma.user.create({
+    data: {
+      fullName,
+      phone,
+      email,
+      passwordHash,
+      role: "COMPANY",
+      location,
+      status: UserStatus.PENDING,
+      verification: VerificationStatus.PENDING,
+      referralCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+
+      companyProfile: {
+        create: {
+          companyLogo,
+          businessLocation,
+          verificationDocuments
+        },
+      },
+    },
+    include: {
+      companyProfile: true,
+    },
+  });
+  return company;
 };
 
 // Approve a company

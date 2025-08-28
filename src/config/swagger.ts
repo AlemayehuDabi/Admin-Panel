@@ -13,7 +13,12 @@ const options: swaggerJsdoc.Options = {
     servers: [
       {
         url: "http://localhost:4000/api", // 👈 adjust based on your base path
+        description: "Local server",
       },
+      {
+        url: "https://admin-panel-auwc.onrender.com/api/",
+        description: "Production server",
+      }
     ],
   },
   apis: ["./src/routes/*.ts", "./src/modules/**/*.ts"], // 👈 points to your routes
