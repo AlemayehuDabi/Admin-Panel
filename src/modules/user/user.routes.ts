@@ -5,7 +5,7 @@ import { authenticate } from "../../middlewares/authMiddleware";
 import { authorize } from "../../middlewares/authorize";
 import validate from "../../middlewares/validate";
 import * as userValidation from "./user.validation";
-import { userIdSchema } from "./user.validation";
+import { postReviewSchema, userIdSchema } from "./user.validation";
 
 const router = Router();
 
@@ -30,7 +30,7 @@ const router = Router();
 
 
 router.use(authenticate);
-router.use(authorize("ADMIN"));
+// router.use(authorize("ADMIN"));
 
 // GET /admin/users?email=&role=&status=&verification=&dateFrom=&dateTo=&page=&limit=
 /**
@@ -252,5 +252,106 @@ router.get("/:id/referrals", validate(userIdSchema, "params"), UserController.ge
  *         description: Referral stats fetched
  */
 router.get("/referral/stats/all", UserController.referralStats);
+
+/**
+ * @swagger
+ * /admin/users/{id}/reviews:
+ *   post:
+ *     tags:
+ *       - Users
+ *     summary: Post a review for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyId:
+ *                 type: string
+ *                 format: uuid
+ *               rating:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 5
+ *               comment:
+ *                 type: string
+ *                 maxLength: 500
+ *     responses:
+ *       200:
+ *         description: Review posted
+ */
+router.post("/:id/reviews", validate(userIdSchema, "params"), validate(postReviewSchema, "body"), UserController.postReview);
+
+/** 
+ * @openapi
+ * /admin/users/{id}/reviews:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get reviews for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User reviews fetched
+ */
+router.get("/:id/reviews", validate(userIdSchema, "params"), UserController.getReviews);
+
+/**
+ * @openapi
+ * /admin/users/{id}/reviews/total:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get total reviews for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User total reviews fetched
+ */
+router.get("/:id/reviews/total", validate(userIdSchema, "params"), UserController.getTotalReviews);
+
+/**
+ * @openapi
+ * /admin/users/{id}/reviews/average:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get average rating for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User average rating fetched
+ */
+router.get("/:id/reviews/average", validate(userIdSchema, "params"), UserController.getAverageRating);
 
 export default router;

@@ -187,4 +187,38 @@ export class UserService {
       byCode: summary,
     };
   }
+
+  static async getAverageRating(userId: string) {
+    const avgRating = await prisma.review.aggregate({
+      where: { userId: userId },
+      _avg: { rating: true },
+    });
+    return avgRating;
+  }
+
+  static async getTotalReviews(userId: string) {
+    const totalReviews = await prisma.review.count({
+      where: { userId: userId },
+    });
+    return totalReviews;
+  }
+
+  static async getReviews(userId: string) {
+    const reviews = await prisma.review.findMany({
+      where: { userId: userId },
+    });
+    return reviews;
+  }
+
+  static async postReview(userId: string, companyId: string, rating: number, comment?: string) {
+    const review = await prisma.review.create({
+      data: {
+        userId,
+        companyId,
+        rating,
+        comment,
+      },
+    });
+    return review;
+  }
 }

@@ -13,13 +13,18 @@ export const listUsersQuerySchema = z.object({
 });
 
 export const userIdSchema = z.object({
-    userId: z.uuid()
+    id: z.uuid()
 });
 
 export const resetPasswordSchema = z.object({
     newPassword: z.string().min(8).max(100),
 });
 
+export const postReviewSchema = z.object({
+    companyId: z.uuid("Company ID is Required"),
+    rating: z.number("Rating must be number or float").min(0, "The Min rating is 0").max(5, "The Max rating is 5"),
+    comment: z.string().max(500).optional()
+});
 
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
 export type ResetPassword = z.infer<typeof resetPasswordSchema>;

@@ -105,4 +105,52 @@ export class UserController {
       res.json(next(err));
     }
   }
-} 
+
+  static async getAverageRating(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await UserService.getAverageRating(req.params.id);
+      res.json(successResponse(data, "Average rating fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+  static async getReviews(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await UserService.getReviews(req.params.id);
+      res.json(successResponse(data, "User reviews fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+  static async getTotalReviews(req: Request, res: Response, next: NextFunction) {
+    try{
+      const data = await UserService.getTotalReviews(req.params.id);
+      res.json(successResponse(data, "Total reviews fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+  static async postReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { companyId, rating, comment } = req.body as {
+        companyId: string;
+        rating: number;
+        comment?: string;
+      };
+      
+      const data = await UserService.postReview(
+        req.params.id,
+        companyId,
+        rating,
+        comment
+      );
+      res.json(successResponse(data, "Review posted"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+}

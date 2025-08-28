@@ -6,12 +6,19 @@ export const createJob = async (data: {
   title: string;
   description: string;
   requiredSkills: string[];
-  location?: string;
+  jobLocation?: string;
   payRate: number;
-  companyId: string;
-}) => {
+  jobType: string;
+  startDate: Date;
+  duration: Date;
+  numbersNeedWorker?: number;
+  additionalInfo?: string;
+}, companyId: string) => {
   return prisma.job.create({
-    data,
+    data: {
+      ...data,
+      company: { connect: { id: companyId } },
+    },
   });
 };
 
@@ -20,8 +27,13 @@ export const updateJob = async (jobId: string, data: Partial<{
   title: string;
   description: string;
   requiredSkills: string[];
-  location: string;
+  jobLocation: string;
   payRate: number;
+  jobType: string;
+  startDate: Date;
+  duration: Date;
+  numbersNeedWorker?: number;
+  additionalInfo?: string;
   status: JobStatus;
 }>) => {
   return prisma.job.update({
@@ -39,17 +51,23 @@ export const deleteJob = async (jobId: string) => {
 export const getJobs = async (filters?: {
   status?: JobStatus;
   companyId?: string;
-  location?: string;
+  jobLocation?: string;
   requiredSkill?: string;
+  jobType?: string;
+  startDate?: Date;
+  duration?: Date;
 }) => {
   return prisma.job.findMany({
     where: {
       status: filters?.status,
       companyId: filters?.companyId,
-      location: filters?.location,
+      jobLocation: filters?.jobLocation,
       requiredSkills: filters?.requiredSkill
         ? { has: filters.requiredSkill }
         : undefined,
+      jobType: filters?.jobType,
+      startDate: filters?.startDate,
+      duration: filters?.duration,
     },
     include: {
       company: { include: { user: true } },

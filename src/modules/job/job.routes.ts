@@ -1,18 +1,27 @@
 import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
+import validate from "../../middlewares/validate";
+import { companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, updateJobSchema } from "./job.validation";
 
 const router = Router();
 
 /**
  * @openapi
- * /job:
+ * /job/{companyId}:
  *   post:
  *     tags:
  *       - Job
  *     summary: Create a new job (authenticated)
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: companyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Company ID to link the job to
  *     requestBody:
  *       required: true
  *       content:
@@ -24,7 +33,9 @@ const router = Router();
  *               - description
  *               - requiredSkills
  *               - payRate
- *               - companyId
+ *               - jobType
+ *               - startDate
+ *               - duration
  *             properties:
  *               title:
  *                 type: string
@@ -34,11 +45,21 @@ const router = Router();
  *                 type: array
  *                 items:
  *                   type: string
- *               location:
+ *               jobLocation:
  *                 type: string
  *               payRate:
  *                 type: number
- *               companyId:
+ *               jobType:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               duration:
+ *                 type: string
+ *                 format: date-time
+ *               numbersNeedWorker:
+ *                 type: integer
+ *               additionalInfo:
  *                 type: string
  *     responses:
  *       200:
@@ -46,7 +67,7 @@ const router = Router();
  *       400:
  *         description: Validation error
  */
-router.post("/", authenticate, jobController.createJob);
+router.post("/:companyId", authenticate, validate(companyIdParamSchema, "params"), validate(createJobSchema, "body"), jobController.createJob);
 
 /**
  * @openapi
@@ -79,12 +100,25 @@ router.post("/", authenticate, jobController.createJob);
  *                 type: array
  *                 items:
  *                   type: string
- *               location:
+ *               jobLocation:
  *                 type: string
  *               payRate:
  *                 type: number
+ *               jobType:
+ *                 type: string
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               duration:
+ *                 type: string
+ *                 format: date-time
+ *               numbersNeedWorker:
+ *                 type: integer
+ *               additionalInfo:
+ *                 type: string
  *               status:
  *                 type: string
+ *                 enum: [OPEN, CLOSED, PENDING, ACCEPTED, REJECTED]
  *     responses:
  *       200:
  *         description: Job updated
@@ -93,7 +127,7 @@ router.post("/", authenticate, jobController.createJob);
  *       404:
  *         description: Job not found
  */
-router.patch("/:id", authenticate, jobController.updateJob);
+router.patch("/:id", authenticate, validate(jobIdParamSchema, "params"), validate(updateJobSchema, "body"), jobController.updateJob);
 
 /**
  * @openapi
@@ -117,7 +151,7 @@ router.patch("/:id", authenticate, jobController.updateJob);
  *       404:
  *         description: Job not found
  */
-router.delete("/:id", authenticate, jobController.deleteJob);
+router.delete("/:id", authenticate, validate(jobIdParamSchema, "params"),  jobController.deleteJob);
 
 /**
  * @openapi
@@ -133,26 +167,39 @@ router.delete("/:id", authenticate, jobController.deleteJob);
  *         name: status
  *         schema:
  *           type: string
- *         description: Filter by job status
+ *           enum: [OPEN, CLOSED, PENDING, ACCEPTED, REJECTED]
  *       - in: query
  *         name: companyId
  *         schema:
  *           type: string
- *         description: Filter by company ID
  *       - in: query
- *         name: location
+ *         name: jobLocation
  *         schema:
  *           type: string
  *       - in: query
  *         name: requiredSkill
  *         schema:
  *           type: string
- *         description: Filter by a required skill
+ *       - in: query
+ *         name: jobType
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: duration
+ *         schema:
+ *           type: string
+ *           format: date-time
  *     responses:
  *       200:
  *         description: List of jobs
  */
-router.get("/", authenticate, jobController.getJobs);
+
+router.get("/", authenticate, validate(jobFiltersSchema, "query"), jobController.getJobs);
 
 /**
  * @openapi
@@ -176,7 +223,7 @@ router.get("/", authenticate, jobController.getJobs);
  *       404:
  *         description: Job not found
  */
-router.get("/:id", authenticate, jobController.getJobById);
+router.get("/:id", authenticate, validate(jobIdParamSchema, "params"), jobController.getJobById);
 
 /**
  * @openapi

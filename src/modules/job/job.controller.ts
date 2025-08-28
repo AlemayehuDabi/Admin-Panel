@@ -4,7 +4,7 @@ import * as jobService from "./job.service";
 // Create job
 export const createJob = async (req: Request, res: Response) => {
   try {
-    const job = await jobService.createJob(req.body);
+    const job = await jobService.createJob(req.body, req.params.companyId);
     res.json(job);
   } catch (err: any) {
     res.status(400).json({ message: err.message });

@@ -36,7 +36,7 @@ enum VerificationStatus {
 }
 
 enum JobStatus {
-  OPEN
+  ACTIVE
   IN_PROGRESS
   COMPLETED
   CANCELLED
@@ -71,14 +71,15 @@ model User {
   workerProfile  Worker?
   companyProfile Company?
   wallet         Wallet?
+  Review         Review[]
 
   @@index([referredBy]) // <— NEW
 }
 
 model Worker {
-  id               String                 @id @default(uuid())
-  user             User                   @relation(fields: [userId], references: [id])
-  userId           String                 @unique
+  id               String    @id @default(uuid())
+  user             User      @relation(fields: [userId], references: [id])
+  userId           String    @unique
   category         String?
   professionalRole String?
   profilePhoto     String?
@@ -89,13 +90,13 @@ model Worker {
   licenses         License[]
   portfolio        String[] // file urls
   availability     Json?
-  rating           Float?
-  ratingCount      Int                    @default(0)
+
   // relations
-  specialities     WorkerSpeciality[]
-  workTypes        WorkerWorkType[]
-  badges           String[]
-  applications     WorkerJobApplication[]
+  reviews      Review[]
+  specialities WorkerSpeciality[]
+  workTypes    WorkerWorkType[]
+  badges       String[]
+  applications WorkerJobApplication[]
 }
 
 model License {
@@ -108,6 +109,24 @@ model License {
   documentUrl String
 }
 
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int // e.g. 1–5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+  Worker    Worker? @relation(fields: [workerId], references: [id])
+  workerId  String?
+
+  @@unique([userId, companyId]) // one company can review a user only once
+}
+
 model Company {
   id                    String   @id @default(uuid())
   user                  User     @relation(fields: [userId], references: [id])
@@ -116,18 +135,24 @@ model Company {
   businessLocation      String?
   verificationDocuments String[] // file urls
   jobs                  Job[]
+  Review                Review[]
 }
 
 model Job {
-  id             String    @id @default(uuid())
-  title          String
-  description    String
-  requiredSkills String[]
-  location       String?
-  payRate        Float
-  status         JobStatus @default(OPEN)
-  company        Company   @relation(fields: [companyId], references: [id])
-  companyId      String
+  id                String    @id @default(uuid())
+  title             String
+  description       String
+  requiredSkills    String[]
+  jobLocation       String?
+  payRate           Float
+  jobType           String?
+  startDate         DateTime?
+  duration          DateTime?
+  numbersNeedWorker Int       @default(1)
+  additionalInfo    String?
+  status            JobStatus @default(ACTIVE)
+  company           Company   @relation(fields: [companyId], references: [id])
+  companyId         String
 
   //
   applications WorkerJobApplication[]
