@@ -144,17 +144,3 @@ Swagger is configured (see `src/config/swagger.ts`). When the server is running,
 - Add CI workflow to run `npm run build` + `npm run test` + `prisma migrate deploy` on release.
 - Add a `.env.example` for safer onboarding.
 
----
-
-Requirements coverage:
-
-- Generate README describing the project: Done
-- How to clone & run: Done (commands provided)
-- How to setup DB & seed: Done
-- Additional notes (structure, scripts, troubleshooting): Done
-
-If you want, I can also:
-
-- add a `.env.example` file,
-- create a small README badge table, or
-- open the Swagger path in `src/server.ts` to confirm the exact docs URL — tell me which next.
