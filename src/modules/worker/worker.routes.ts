@@ -168,6 +168,9 @@ router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), 
  *               name:
  *                 type: string
  *                 description: Category name
+ *               description:
+ *                 type: string
+ *                 description: Category description
  *     responses:
  *       201:
  *         description: Category created successfully
@@ -195,6 +198,9 @@ router.post("/categories", validate(createCategory, "body"), workerController.cr
  *               name:
  *                 type: string
  *                 description: Role name
+ *               description:
+ *                 type: string
+ *                 description: Role description
  *               categoryId:
  *                 type: string
  *                 description: Category ID
@@ -225,6 +231,9 @@ router.post("/roles", validate(createRole, "body"), workerController.createRoleC
  *               name:
  *                 type: string
  *                 description: Speciality name
+ *               description:
+ *                 type: string
+ *                 description: Speciality description
  *               roleId:
  *                 type: string
  *                 description: Role ID
@@ -255,6 +264,9 @@ router.post("/specialities", validate(createSpeciality, "body"), workerControlle
  *               name:
  *                 type: string
  *                 description: Work type name
+ *               description:
+ *                 type: string
+ *                 description: Work type description
  *               specialityId:
  *                 type: string
  *                 description: Speciality ID
@@ -504,7 +516,70 @@ router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, work
 router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDetailsSchema, "body"), authenticate, workerController.updateWorkerDetails);
 
 /**
- * 
+ * @swagger
+ * /workerRegister:
+ *   post:
+ *     tags:
+ *       - Worker
+ *     summary: Register a new worker
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               skills:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               portfolio:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uri
+ *               availability:
+ *                 type: object
+ *                 properties:
+ *                   days:
+ *                     type: object
+ *                     properties:
+ *                       monday:
+ *                         type: boolean
+ *                       tuesday:
+ *                         type: boolean
+ *                       wednesday:
+ *                         type: boolean
+ *                       thursday:
+ *                         type: boolean
+ *                       friday:
+ *                         type: boolean
+ *                       saturday:
+ *                         type: boolean
+ *                       sunday:
+ *                         type: boolean
+ *                   time:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                       enum: [morning, afternoon, evening, night]
+ *               category:
+ *                 type: string
+ *               professionalRole:
+ *                 type: string
+ *               experience:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Worker registered successfully
+ *       400:
+ *         description: Validation error
  */
 router.post("/workerRegister", validate(workerRegistrationSchema, "body"), workerController.registerWorker)
 
