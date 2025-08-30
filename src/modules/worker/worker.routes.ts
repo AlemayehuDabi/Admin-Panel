@@ -362,7 +362,7 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *         description: Unauthorized
  */
 
-router.get("/", authenticate, validate(workerSchema, "query"), workerController.getWorkers);
+router.get("/", authenticate,  workerController.getWorkers);
 
 /**
  * @openapi
