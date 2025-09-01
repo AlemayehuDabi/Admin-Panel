@@ -5,7 +5,7 @@ export const uploadFileController = async (req: Request, res: Response) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file uploaded " });
 
-    const fileKey = `resumes/${Date.now()}-${req.file.originalname}`;
+    const fileKey = `documents/${Date.now()}-${req.file.originalname}`;
     const url = await uploadFile(fileKey, req.file.buffer, req.file.mimetype);
 
     res.status(201).json({ url });
