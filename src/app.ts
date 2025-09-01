@@ -12,6 +12,7 @@ import workerRoutes from "./modules/worker/worker.routes";
 import analyticsRoutes from "./modules/analytics/analytics.routes";
 import jobRoutes from "./modules/job/job.routes";
 import walletRoutes from "./modules/wallet/wallet.routes";
+import storage from "./modules/storage/storage.routes"
 
 
 const app = express();
@@ -34,6 +35,7 @@ app.use("/api/workers", workerRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/wallets", walletRoutes);
+app.use("/api/storage", storage);
 
 // Setup Swagger
 setupSwagger(app);
