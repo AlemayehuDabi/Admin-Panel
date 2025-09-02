@@ -10,6 +10,20 @@ const options: swaggerJsdoc.Options = {
       version: "1.0.0",
       description: "API documentation for Admin Panel backend",
     },
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
     servers: [
       {
         url: "http://localhost:4000/api", // 👈 adjust based on your base path

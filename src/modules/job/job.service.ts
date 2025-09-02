@@ -1,5 +1,7 @@
 import prisma from "../../config/prisma";
 import { JobStatus } from "@prisma/client";
+import { NotificationService } from "../notification/notification.service";
+import { NotificationRuleService } from "../notification/notificationRuleService";
 
 // Create a new job
 export const createJob = async (data: {
@@ -14,12 +16,37 @@ export const createJob = async (data: {
   numbersNeedWorker?: number;
   additionalInfo?: string;
 }, companyId: string) => {
-  return prisma.job.create({
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+  });
+  if (!company) throw new Error("Company not found");
+
+  const job = await prisma.job.create({
     data: {
       ...data,
       company: { connect: { id: companyId } },
     },
   });
+
+  // Delegate rule matching
+ // Fire-and-forget everything
+(async () => {
+  try {
+    const userIds = await NotificationRuleService.getUsersForJob(job.id);
+    if (userIds.length > 0) {
+      await NotificationService.notifyUsers(
+        userIds,
+        "New Job Posted",
+        `A new job "${job.title}" matches your profile`,
+        "NEW_JOB"
+      );
+    }
+  } catch (err) {
+    console.error("Notification failed:", err);
+  }
+})();
+
+  return job;
 };
 
 // Update an existing job

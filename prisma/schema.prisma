@@ -49,6 +49,20 @@ enum TransactionType {
   ADJUSTMENT
 }
 
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  NEW_JOB // worker gets notified a new job is posted
+  JOB_RESPONSE // worker gets notified about application response
+  COMPANY_REQUEST // worker invited by a company
+  ALERT // system / admin alerts
+  NEW_CANDIDATE // company gets notified a worker applied
+}
+
 // prisma/schema.prisma  (additions only)
 
 model User {
@@ -72,6 +86,7 @@ model User {
   companyProfile Company?
   wallet         Wallet?
   Review         Review[]
+  Notification   Notification[]
 
   @@index([referredBy]) // <— NEW
 }
@@ -163,13 +178,14 @@ model Job {
 }
 
 model WorkerJobApplication {
-  id        String   @id @default(uuid())
-  worker    Worker   @relation(fields: [workerId], references: [id])
-  workerId  String
-  job       Job      @relation(fields: [jobId], references: [id])
-  jobId     String
-  status    String   @default("PENDING") // Pending, Accepted, Rejected
-  appliedAt DateTime @default(now())
+  id            String            @id @default(uuid())
+  worker        Worker            @relation(fields: [workerId], references: [id])
+  workerId      String
+  job           Job               @relation(fields: [jobId], references: [id])
+  jobId         String
+  adminApproved ApplicationStatus @default(PENDING)
+  status        ApplicationStatus @default(PENDING)
+  appliedAt     DateTime          @default(now())
 }
 
 model Wallet {
@@ -249,4 +265,16 @@ model WorkerWorkType {
   workType WorkType @relation(fields: [workTypeId], references: [id])
 
   @@id([workerId, workTypeId])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType
+  createdAt DateTime         @default(now())
+  isRead    Boolean          @default(false)
+
+  user User @relation(fields: [userId], references: [id])
 }

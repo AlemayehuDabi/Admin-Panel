@@ -61,6 +61,16 @@ export const getWorkerById = async (workerId: string) => {
 };
 
 export const workerRegister = async (data: any) => {
+  const workerExist = await prisma.user.findUnique({
+    where: { email: data.email},
+  });
+  if (workerExist) throw new Error("Email already taken");
+
+  const phoneExist = await prisma.user.findUnique({
+    where: { phone: data.phone },
+  });
+  if (phoneExist) throw new Error("Phone number already taken");
+
   const { fullName, email, phone, password, role, location, skills, portfolio, availability, experience, categoryId, roleId, specialityIds, workTypeIds } = data;
   const passwordHash = await bcrypt.hash(password, 10);
   const newWorkerUser = await prisma.user.create({
