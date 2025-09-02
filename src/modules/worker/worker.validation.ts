@@ -7,15 +7,15 @@ export const userIdSchema = z.object({
 });
 
 export const categoryIdSchema = z.object({
-  id: z.uuid("Invalid Category Id or Not Found")
+  categoryId: z.uuid("Invalid Category Id or Not Found")
 });
 
 export const roleIdSchema = z.object({
-  id: z.uuid("Invalid Role Id or Not Found")
+  roleId: z.uuid("Invalid Role Id or Not Found")
 });
 
 export const specialityIdSchema = z.object({
-  id: z.uuid("Invalid Speciality Id or Not Found")
+  specialityId: z.uuid("Invalid Speciality Id or Not Found")
 });
 
 export const workerRegistrationSchema = z.object({
@@ -54,8 +54,10 @@ export const workerDetailsSchema = z.object({
     }).optional(),
     time: z.array(z.enum(["morning", "afternoon", "evening", "night"])).optional(),
   }).optional(),
-  category: z.string().optional(),
-  professionalRole: z.string().optional(),
+  categoryId: z.uuid("Invalid Category Id or Not Found").optional(),
+  professionalRole: z.uuid("Invalid Professional Role Id or Not Found").optional(),
+  specialities: z.array(z.uuid("Invalid Speciality Id or Not Found")).optional(),
+  workTypes: z.array(z.uuid("Invalid Work Type Id or Not Found")).optional(),
   experience: z.string().optional(),
 }, "No Worker Details Provided");
 
@@ -98,3 +100,4 @@ export const workerSchema = z.object({
 
 export type UserId = z.infer<typeof userIdSchema>;
 export type WorkerRegistrationInput = z.infer<typeof workerRegistrationSchema>;
+export type workerDetailsInput = z.infer<typeof workerDetailsSchema>;

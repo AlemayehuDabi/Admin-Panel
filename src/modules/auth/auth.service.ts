@@ -86,7 +86,7 @@ export const workerLogin = async (data: any) => {
     { expiresIn: "7d" }
   );
 
-  return { token, worker };
+  return { token, user, worker };
 };
 
 export const approveUser = async (userId: string) => {

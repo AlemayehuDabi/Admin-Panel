@@ -1,6 +1,7 @@
 import prisma from "../../config/prisma";
 import { VerificationStatus, UserStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
+import { workerDetailsInput } from "./worker.validation"
 
 // Get all workers (optionally filter by verification or status)
 interface WorkerFilter {
@@ -156,29 +157,100 @@ export const approveLicense = async (licenseId: string) => {
 };
 
 export const upsertWorkerDetails = async (userId: string, data: any) => {
-  const { skills = [""], portfolio = [""], availability = {}, category = "", professionalRole = "", experience = "" } = data;
+  const {
+    skills = [""],
+    portfolio = [""],
+    availability = {},
+    categoryId = "",
+    professionalRole = "",
+    experience = "",
+    workType,     // scalar String[] on Worker
+    specialities, // array of Speciality ids (strings)
+    workTypes,    // array of WorkType ids (strings)
+    ...rest
+  } = data;
 
-  return prisma.worker.upsert({
-    where: { userId }, // unique constraint in schema
-    update: {
-      skills,
-      portfolio,
-      availability,
-      category,
-      professionalRole,
-      experience,
-    },
-    create: {
-      userId,
-      skills,
-      portfolio,
-      availability,
-      category,
-      professionalRole,
-      experience,
+  // 1) Run writes inside a transaction and return the worker id
+  const { workerId } = await prisma.$transaction(async (tx) => {
+    const worker = await tx.worker.upsert({
+      where: { userId },
+      update: {
+        skills,
+        portfolio,
+        availability,
+        categoryId,
+        professionalRole,
+        experience,
+        ...(Array.isArray(workType) ? { workType } : {}),
+        ...rest, // important: don't include relation join arrays here
+      },
+      create: {
+        userId,
+        skills,
+        portfolio,
+        availability,
+        categoryId,
+        professionalRole,
+        experience,
+        ...(Array.isArray(workType) ? { workType } : {}),
+        ...rest,
+      },
+    });
+
+    // Replace workerWorkType join rows (adjust FK names below if needed)
+    if (Array.isArray(workTypes)) {
+      await tx.workerWorkType.deleteMany({ where: { workerId: worker.id } });
+
+      if (workTypes.length) {
+        await tx.workerWorkType.createMany({
+          data: workTypes.map((wtId: string) => ({
+            workerId: worker.id,
+            // change this key if your join model uses a different FK name:
+            workTypeId: wtId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    // Replace workerSpeciality join rows (adjust FK names below if needed)
+    if (Array.isArray(specialities)) {
+      await tx.workerSpeciality.deleteMany({ where: { workerId: worker.id } });
+
+      if (specialities.length) {
+        await tx.workerSpeciality.createMany({
+          data: specialities.map((specId: string) => ({
+            workerId: worker.id,
+            // change this key if your join model uses a different FK name:
+            specialityId: specId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    // return the worker id (not tx.* queries after tx closes)
+    return { workerId: worker.id };
+  });
+
+  // 2) Outside the transaction: fetch the worker with relations (safe)
+  const updated = await prisma.worker.findUnique({
+    where: { id: workerId },
+    include: {
+      // include the join rows or related objects as you prefer:
+      workTypes: {
+        include: { workType: true } // if you want the related WorkType rows
+      },
+      specialities: {
+        include: { speciality: true } // if you want the related Speciality rows
+      },
+      // add other includes you need, e.g. reviews, applications
     },
   });
+
+  return updated;
 };
+
 
 export async function getCategories() {
   return prisma.category.findMany()
