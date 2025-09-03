@@ -8,7 +8,6 @@ const BUCKET = env.R2_BUCKET;
 
 
 export const uploadFile = async (key: string, fileBuffer: Buffer, contentType: string) => {
-  console.log(`Uploading file to ${BUCKET}/${key}`);
   const command = new PutObjectCommand({
     Bucket: BUCKET,
     Key: key,

@@ -328,7 +328,7 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *       200:
  *         description: List of workers
  */
-router.get("/", authenticate, workerController.getWorkers);
+router.get("/", authenticate,  workerController.getWorkers);
 
 /**
  * @openapi

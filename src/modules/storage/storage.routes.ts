@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { uploadProfilePicture, uploadFileController } from "./storage.controller";
+import { uploadProfilePicture, uploadNationalId, uploadCompanyFileController, uploadWorkerFileController } from "./storage.controller";
 import { upload } from "../../middlewares/upload";
 import validate from "../../middlewares/validate";
 import { authenticate } from "../../middlewares/authMiddleware";
@@ -13,7 +13,7 @@ const router = Router();
 router.use(authenticate);
 
 /**
- * @swagger
+ * @openapi
  * components:
  *   schemas:
  *     FileResponse:
@@ -25,13 +25,15 @@ router.use(authenticate);
  */
 
 /**
- * @swagger
- * /api/storage/file:
+ * @openapi
+ * /storage/worker/documents:
  *   post:
- *     summary: Upload a file
+ *     tags:
+ *       - Storage
+ *     summary: Upload a worker document (authenticated)
+ *     description: Uploads a file for a worker (resume, verification doc). Request must be multipart/form-data with field name `file`.
  *     security:
  *       - bearerAuth: []
- *     tags: [Storage]
  *     requestBody:
  *       required: true
  *       content:
@@ -50,22 +52,58 @@ router.use(authenticate);
  *             schema:
  *               $ref: '#/components/schemas/FileResponse'
  *       400:
- *         description: No file uploaded
+ *         description: No file uploaded or validation error
  *       500:
  *         description: Server error
  */
 
-router.post("/file", upload.single("file"), validate(uploadFileValidation, "file"), uploadFileController);
+router.post("/worker/documents", upload.single("file"), validate(uploadFileValidation, "file"), uploadWorkerFileController);
 
 /**
- * @swagger
- * /api/storage/profile-picture:
+ * @openapi
+ * /storage/company/documents:
  *   post:
- *     summary: Upload a profile picture
- *     security:
- *       - bearerAuth: []
  *     tags:
  *       - Storage
+ *     summary: Upload a company document (authenticated)
+ *     description: Uploads a file for a company (verification doc). Request must be multipart/form-data with field name `file`.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: File uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FileResponse'
+ *       400:
+ *         description: No file uploaded or validation error
+ *       500:
+ *         description: Server error
+ */
+
+router.post("/company/documents", upload.single("file"), validate(uploadFileValidation, "file"), uploadCompanyFileController);
+
+/**
+ * @openapi
+ * /storage/profile-picture:
+ *   post:
+ *     tags:
+ *       - Storage
+ *     summary: Upload a profile picture (authenticated)
+ *     description: Uploads a profile picture. Request must be multipart/form-data with field name `file`.
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -84,11 +122,46 @@ router.post("/file", upload.single("file"), validate(uploadFileValidation, "file
  *             schema:
  *               $ref: '#/components/schemas/FileResponse'
  *       400:
- *         description: No file uploaded
+ *         description: No file uploaded or validation error
  *       500:
  *         description: Server error
  */
 
 router.post("/profile-picture", upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadProfilePicture);
+
+/**
+ * @openapi
+ * /storage/worker/national-id:
+ *   post:
+ *     tags:
+ *       - Storage
+ *     summary: Upload worker national ID (authenticated)
+ *     description: Uploads a worker national ID image. Request must be multipart/form-data with field name `file`.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: National ID uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FileResponse'
+ *       400:
+ *         description: No file uploaded or validation error
+ *       500:
+ *         description: Server error
+ */
+
+router.post("/worker/national-id", upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadNationalId);
 
 export default router;
