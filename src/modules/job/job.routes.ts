@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
 import validate from "../../middlewares/validate";
-import { companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, updateJobSchema } from "./job.validation";
+import { applicationIdParamSchema, assignWorkerParamsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, updateJobSchema } from "./job.validation";
 
 const router = Router();
 
@@ -151,7 +151,7 @@ router.patch("/:id", authenticate, validate(jobIdParamSchema, "params"), validat
  *       404:
  *         description: Job not found
  */
-router.delete("/:id", authenticate, validate(jobIdParamSchema, "params"),  jobController.deleteJob);
+router.delete("/:id", authenticate, validate(jobIdParamSchema, "params"), jobController.deleteJob);
 
 /**
  * @openapi
@@ -271,6 +271,36 @@ router.patch("/applications/:applicationId/accept", authenticate, jobController.
  *       404:
  *         description: Application not found
  */
-router.patch("/applications/:applicationId/reject", authenticate, jobController.rejectApplication);
+router.patch("/applications/:applicationId/reject", validate(applicationIdParamSchema, "params"), authenticate, jobController.rejectApplication);
+
+/**
+ * @swagger
+ * /job/{jobId}/assign/{workerId}:
+ *   post:
+ *     tags:
+ *       - Job
+ *     summary: Assign a worker to a job (authenticated)
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Job ID to assign the worker to
+ *       - in: path
+ *         name: workerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Worker ID to assign to the job
+ *     responses:
+ *       200:
+ *         description: Worker assigned to job
+ *       404:
+ *         description: Job or worker not found
+ */
+router.post("/:jobId/assign/:workerId", validate(assignWorkerParamsSchema, "params"), authenticate, jobController.assignWorkerToJob);
 
 export default router;

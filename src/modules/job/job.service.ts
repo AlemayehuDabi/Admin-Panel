@@ -129,3 +129,33 @@ export const rejectApplication = async (applicationId: string) => {
     data: { status: "REJECTED" },
   });
 };
+
+export const assignWorkerToJob = async (jobId: string, workerId: string) => {
+
+  const job = await prisma.job.findUnique({ where: { id: jobId } });
+  const worker = await prisma.worker.findUnique({ where: { id: workerId } });
+
+  if (!job) throw new Error("Job not found");
+  if (!worker) throw new Error("Worker not found");
+
+  const application = await prisma.workerJobApplication.create({
+    data: { workerId, jobId, status: "ASSIGNED" },
+  });
+
+
+  (async () => {
+  try {
+      await NotificationService.notifyUser(
+        worker.userId,
+        "You have been assigned to a job",
+        `You have been assigned to the job "${job.title}"`,
+        "NEW_JOB"
+      );
+  } catch (err) {
+    console.error("Notification failed:", err);
+  }
+})();
+
+
+  return application;
+};

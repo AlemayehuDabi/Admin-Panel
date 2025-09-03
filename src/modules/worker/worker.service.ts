@@ -2,6 +2,7 @@ import prisma from "../../config/prisma";
 import { VerificationStatus, UserStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { workerDetailsInput } from "./worker.validation"
+import { NotificationService } from "../notification/notification.service";
 
 // Get all workers (optionally filter by verification or status)
 interface WorkerFilter {
@@ -251,7 +252,6 @@ export const upsertWorkerDetails = async (userId: string, data: any) => {
   return updated;
 };
 
-
 export async function getCategories() {
   return prisma.category.findMany()
 }
@@ -327,3 +327,62 @@ export const createWorkType = async (name: string, description: string, speciali
     data: { name, description, specialityId }
   })
 }
+
+export const acceptAssignment = async (applicationId: string) => {
+
+  const result = await prisma.workerJobApplication.update({
+    where: { id: applicationId },
+    data: { acceptedAssignment: true },
+    include: { worker: { include: { user: true } }, job: true }
+  });
+  const Admin = await prisma.user.findMany({ where: { role: "ADMIN" } });
+
+  (async () => {
+    try {
+        await NotificationService.notifyUsers(
+          Admin.map(admin => admin.id),
+          `Job agreement accepted by ${result.worker.user.fullName} for the job "${result.job.title}"`,
+          `Worker ${result.worker.user.fullName} has been assigned to the job "${result.job.title}"`,
+          "JOB_RESPONSE"
+        );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  return result;
+}
+
+export const rejectAssignment = async (applicationId: string) => {
+
+  const result = await prisma.workerJobApplication.update({
+    where: { id: applicationId },
+    data: { acceptedAssignment: false },
+    include: { worker: { include: { user: true } }, job: true }
+  });
+  const Admin = await prisma.user.findMany({ where: { role: "ADMIN" } });
+
+  (async () => {
+    try {
+        await NotificationService.notifyUsers(
+          Admin.map(admin => admin.id),
+          `Job agreement rejected by ${result.worker.user.fullName} for the job "${result.job.title}"`,
+          `Worker ${result.worker.user.fullName} has been rejected for the job "${result.job.title}"`,
+          "JOB_RESPONSE"
+        );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  return result;
+}
+
+export const getWorkerJobApplications = async (workerId: string) => {
+  return prisma.workerJobApplication.findMany({
+    where: { workerId },
+    include: { job: true, worker: { include: { user: true }, job: { include: { company: true } } } }
+  });
+}
+
+

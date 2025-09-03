@@ -51,6 +51,7 @@ enum TransactionType {
 
 enum ApplicationStatus {
   PENDING
+  ASSIGNED
   ACCEPTED
   REJECTED
 }
@@ -61,6 +62,7 @@ enum NotificationType {
   COMPANY_REQUEST // worker invited by a company
   ALERT // system / admin alerts
   NEW_CANDIDATE // company gets notified a worker applied
+  JOB_ASSIGNED // company assinged to worker
 }
 
 // prisma/schema.prisma  (additions only)
@@ -178,14 +180,15 @@ model Job {
 }
 
 model WorkerJobApplication {
-  id            String            @id @default(uuid())
-  worker        Worker            @relation(fields: [workerId], references: [id])
-  workerId      String
-  job           Job               @relation(fields: [jobId], references: [id])
-  jobId         String
-  adminApproved ApplicationStatus @default(PENDING)
-  status        ApplicationStatus @default(PENDING)
-  appliedAt     DateTime          @default(now())
+  id                 String            @id @default(uuid())
+  worker             Worker            @relation(fields: [workerId], references: [id])
+  workerId           String
+  job                Job               @relation(fields: [jobId], references: [id])
+  jobId              String
+  adminApproved      ApplicationStatus @default(PENDING)
+  status             ApplicationStatus @default(PENDING)
+  acceptedAssignment Boolean           @default(false)
+  appliedAt          DateTime          @default(now())
 }
 
 model Wallet {

@@ -42,3 +42,12 @@ export const jobIdParamSchema = z.object({
 export const companyIdParamSchema = z.object({
     companyId: z.uuid()
 });
+
+export const applicationIdParamSchema = z.object({
+  applicationId: z.uuid()
+});
+
+export const assignWorkerParamsSchema = z.object({
+  jobId: z.uuid(),
+  workerId: z.uuid()
+});
