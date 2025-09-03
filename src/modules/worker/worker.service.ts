@@ -381,7 +381,7 @@ export const rejectAssignment = async (applicationId: string) => {
 export const getWorkerJobApplications = async (workerId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { workerId },
-    include: { job: true, worker: { include: { user: true }, job: { include: { company: true } } } }
+    include: { job: true, worker: { include: { user: true } } }
   });
 }
 
