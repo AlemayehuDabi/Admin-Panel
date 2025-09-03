@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
 import validate from "../../middlewares/validate";
-import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType, workerRegistrationSchema, workerSchema } from "./worker.validation";
+import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType, workerRegistrationSchema, workerSchema, applicationsSchema, workerIdSchema } from "./worker.validation";
 
 const router = Router();
 
@@ -582,5 +582,84 @@ router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDe
  *         description: Validation error
  */
 router.post("/workerRegister", validate(workerRegistrationSchema, "body"), workerController.registerWorker)
+
+
+/**
+ * @swagger
+ * /workers/{workerId}/applications:
+ *   get:
+ *     tags:
+ *       - Worker
+ *     summary: Get job applications for a specific worker
+ *     parameters:
+ *       - in: path
+ *         name: workerId
+ *         required: true
+ *         description: ID of the worker
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of job applications
+ *       404:
+ *         description: Worker not found
+ */
+router.get("/:workerId/applications", validate(applicationsSchema, "params"), authenticate, workerController.getWorkerJobApplications);
+
+/**
+ * @swagger
+ * /workers/{workerId}/applications/{applicationId}/accept:
+ *   patch:
+ *     tags:
+ *       - Worker
+ *     summary: Accept a job assignment for a specific application
+ *     parameters:
+ *       - in: path
+ *         name: workerId
+ *         required: true
+ *         description: ID of the worker
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         description: ID of the job application to accept
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Job assignment accepted successfully
+ *       404:
+ *         description: Worker or application not found
+ */
+router.patch("/:workerId/applications/:applicationId/accept", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.acceptJobAssignment);
+
+/**
+ * @swagger
+ * /workers/{workerId}/applications/{applicationId}/reject:
+ *   patch:
+ *     tags:
+ *       - Worker
+ *     summary: Reject a job assignment for a specific application
+ *     parameters:
+ *       - in: path
+ *         name: workerId
+ *         required: true
+ *         description: ID of the worker
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         description: ID of the job application to reject
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Job assignment rejected successfully
+ *       404:
+ *         description: Worker or application not found
+ */
+router.patch("/:workerId/applications/:applicationId/reject", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.rejectJobAssignment);
 
 export default router;

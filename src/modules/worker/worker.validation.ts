@@ -10,6 +10,16 @@ export const categoryIdSchema = z.object({
   categoryId: z.uuid("Invalid Category Id or Not Found")
 });
 
+export const applicationsSchema = z.object({
+  workerId: z.uuid("Invalid Application Id or Not Found")
+});
+
+export const workerIdSchema = z.object({
+  workerId: z.uuid("Invalid Worker Id or Not Found")
+});
+
+
+
 export const roleIdSchema = z.object({
   roleId: z.uuid("Invalid Role Id or Not Found")
 });

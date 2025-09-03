@@ -187,7 +187,7 @@ model WorkerJobApplication {
   jobId              String
   adminApproved      ApplicationStatus @default(PENDING)
   status             ApplicationStatus @default(PENDING)
-  acceptedAssignment Boolean           @default(false)
+  acceptedAssignment ApplicationStatus @default(PENDING)
   appliedAt          DateTime          @default(now())
 }
 
