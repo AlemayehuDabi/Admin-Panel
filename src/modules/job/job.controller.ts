@@ -81,3 +81,23 @@ export const assignWorkerToJob = async (req: Request, res: Response, next: NextF
     next(err);
   }
 };
+
+// Admin Approve the work contract
+export const approveWorkContract = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const application = await jobService.adminContractApproval(req.params.applicationId);
+    res.json(application);
+  } catch (err: any) {
+    next(err);
+  }
+};
+
+// Admin Reject the work contract
+export const rejectWorkContract = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const application = await jobService.adminContractRejection(req.params.applicationId);
+    res.json(application);
+  } catch (err: any) {
+    next(err);
+  }
+};

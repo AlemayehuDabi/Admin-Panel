@@ -2,6 +2,8 @@ import prisma from "../../config/prisma";
 import { JobStatus } from "@prisma/client";
 import { NotificationService } from "../notification/notification.service";
 import { NotificationRuleService } from "../notification/notificationRuleService";
+import { application } from "express";
+import { ap } from "@faker-js/faker/dist/airline-CLphikKp";
 
 // Create a new job
 export const createJob = async (data: {
@@ -29,22 +31,22 @@ export const createJob = async (data: {
   });
 
   // Delegate rule matching
- // Fire-and-forget everything
-(async () => {
-  try {
-    const userIds = await NotificationRuleService.getUsersForJob(job.id);
-    if (userIds.length > 0) {
-      await NotificationService.notifyUsers(
-        userIds,
-        "New Job Posted",
-        `A new job "${job.title}" matches your profile`,
-        "NEW_JOB"
-      );
+  // Fire-and-forget everything
+  (async () => {
+    try {
+      const userIds = await NotificationRuleService.getUsersForJob(job.id);
+      if (userIds.length > 0) {
+        await NotificationService.notifyUsers(
+          userIds,
+          "New Job Posted",
+          `A new job "${job.title}" matches your profile`,
+          "NEW_JOB"
+        );
+      }
+    } catch (err) {
+      console.error("Notification failed:", err);
     }
-  } catch (err) {
-    console.error("Notification failed:", err);
-  }
-})();
+  })();
 
   return job;
 };
@@ -144,18 +146,40 @@ export const assignWorkerToJob = async (jobId: string, workerId: string) => {
 
 
   (async () => {
-  try {
+    try {
       await NotificationService.notifyUser(
         worker.userId,
         "You have been assigned to a job",
         `You have been assigned to the job "${job.title}"`,
         "NEW_JOB"
       );
-  } catch (err) {
-    console.error("Notification failed:", err);
-  }
-})();
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
 
 
   return application;
 };
+
+export const adminContractApproval = async (applicationId: string) => {
+  const application = await prisma.workerJobApplication.findUnique({ where: { id: applicationId } })
+  if (!application) throw new Error("Application not found");
+  return await prisma.workerJobApplication.update({
+    where: { id: applicationId },
+    data: {
+      adminApproved: "ACCEPTED"
+    }
+  })
+}
+
+export const adminContractRejection = async (applicationId: string) => {
+  const application = await prisma.workerJobApplication.findUnique({ where: { id: applicationId } })
+  if (!application) throw new Error("Application not found");
+  return await prisma.workerJobApplication.update({
+    where: { id: applicationId },
+    data: {
+      adminApproved: "REJECTED"
+    }
+  })
+}

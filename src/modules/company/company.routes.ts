@@ -14,24 +14,25 @@ const router = Router();
  *     tags:
  *       - Company
  *     summary: Get all companies (admin)
+ *     description: Returns companies filtered by optional `status` and `verification` query params.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: status
  *         schema:
  *           type: string
- *         description: Filter by user status (e.g. ACTIVE, INACTIVE)
+ *           enum: [ACTIVE, INACTIVE, PENDING, REJECTED]
+ *         description: Filter by user status
  *       - in: query
  *         name: verification
  *         schema:
  *           type: string
- *         description: Filter by verification status (e.g. APPROVED, PENDING)
- *     security:
- *       - bearerAuth: []
+ *           enum: [PENDING, APPROVED, REJECTED]
+ *         description: Filter by verification status
  *     responses:
  *       200:
  *         description: List of companies
- *       401:
- *         description: Unauthorized
  */
 router.get("/", authenticate, validate(getAllCompaniesSchema, "query"), companyController.getAllCompanies);
 
@@ -42,20 +43,19 @@ router.get("/", authenticate, validate(getAllCompaniesSchema, "query"), companyC
  *     tags:
  *       - Company
  *     summary: Get company details by ID (admin)
+ *     description: Returns the company profile for the given company id (uuid).
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Company ID
- *     security:
- *       - bearerAuth: []
+ *         description: Company ID (uuid)
  *     responses:
  *       200:
  *         description: Company details
- *       401:
- *         description: Unauthorized
  *       404:
  *         description: Company not found
  */
@@ -68,12 +68,19 @@ router.get("/:id", authenticate, validate(companyParamsSchema, "params"), compan
  *     tags:
  *       - Company
  *     summary: Register a new company
+ *     description: Creates a new user with role COMPANY. Validated by `createCompanySchema`.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - fullName
+ *               - phone
+ *               - email
+ *               - password
+ *               - location
  *             properties:
  *               fullName:
  *                 type: string
@@ -81,24 +88,21 @@ router.get("/:id", authenticate, validate(companyParamsSchema, "params"), compan
  *                 type: string
  *               email:
  *                 type: string
+ *                 format: email
  *               password:
  *                 type: string
  *               location:
  *                 type: string
  *               companyLogo:
  *                 type: string
+ *                 format: uri
  *               businessLocation:
  *                 type: string
  *               verificationDocuments:
  *                 type: array
  *                 items:
  *                   type: string
- *             required:
- *               - fullName
- *               - phone
- *               - email
- *               - password
- *               - location
+ *                   format: uri
  *     responses:
  *       201:
  *         description: Company registered successfully
@@ -114,20 +118,19 @@ router.post("/register", validate(createCompanySchema, "body"), companyControlle
  *     tags:
  *       - Company
  *     summary: Approve a company (admin)
+ *     description: Admin endpoint to set company verification to APPROVED. Requires authentication.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Company ID to approve
- *     security:
- *       - bearerAuth: []
+ *         description: Company ID (uuid)
  *     responses:
  *       200:
- *         description: Company approved and user verification set to APPROVED
- *       401:
- *         description: Unauthorized
+ *         description: Company approved
  *       404:
  *         description: Company not found
  */
@@ -140,20 +143,19 @@ router.patch("/:id/approve", authenticate, validate(companyParamsSchema, "params
  *     tags:
  *       - Company
  *     summary: Reject a company (admin)
+ *     description: Admin endpoint to set company verification to REJECTED. Requires authentication.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Company ID to reject
- *     security:
- *       - bearerAuth: []
+ *         description: Company ID (uuid)
  *     responses:
  *       200:
- *         description: Company rejected and user verification set to REJECTED
- *       401:
- *         description: Unauthorized
+ *         description: Company rejected
  *       404:
  *         description: Company not found
  */
@@ -161,25 +163,41 @@ router.patch("/:id/reject", authenticate, validate(companyParamsSchema, "params"
 
 /**
  * @openapi
- * /company/{id}:
+ * /company/{id}/details:
  *   patch:
  *     tags:
  *       - Company
  *     summary: Update company details (admin)
+ *     description: Upsert company profile fields (companyLogo, businessLocation, verificationDocuments). Requires authentication.
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Company ID to update
- *     security:
- *       - bearerAuth: []
+ *         description: Company ID (uuid)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyLogo:
+ *                 type: string
+ *                 format: uri
+ *               businessLocation:
+ *                 type: string
+ *               verificationDocuments:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uri
  *     responses:
  *       200:
  *         description: Company details updated
- *       401:
- *         description: Unauthorized
  *       404:
  *         description: Company not found
  */

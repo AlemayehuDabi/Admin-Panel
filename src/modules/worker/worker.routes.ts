@@ -8,141 +8,120 @@ const router = Router();
 
 /**
  * @openapi
- * /worker/categories:
+ * /workers/categories:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all worker categories
- *     security:
- *       - bearerAuth: []
+ *     description: Public endpoint that returns available worker categories
  *     responses:
  *       200:
  *         description: List of worker categories
- *       401:
- *         description: Unauthorized
  */
 router.get("/categories", workerController.getCategoriesController);
 
 /**
  * @openapi
- * /worker/roles:
+ * /workers/roles:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all worker roles
- *     security:
- *       - bearerAuth: []
+ *     description: Public endpoint that returns all roles (includes category relation)
  *     responses:
  *       200:
  *         description: List of worker roles
- *       401:
- *         description: Unauthorized
  */
 router.get("/roles", workerController.getRolesController);
 
 /**
  * @openapi
- * /worker/specialities:
+ * /workers/specialities:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all worker specialities
- *     security:
- *       - bearerAuth: []
+ *     description: Public endpoint that returns all specialities (includes role relation)
  *     responses:
  *       200:
  *         description: List of worker specialities
- *       401:
- *         description: Unauthorized
  */
 router.get("/specialities", workerController.getSpecialitiesController);
 
 /**
  * @openapi
- * /worker/work-types:
+ * /workers/work-types:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all worker work types
- *     security:
- *       - bearerAuth: []
+ *     description: Public endpoint that returns all work types (includes speciality relation)
  *     responses:
  *       200:
  *         description: List of worker work types
- *       401:
- *         description: Unauthorized
  */
 router.get("/work-types", workerController.getWorkTypesController);
 
 /**
  * @openapi
- * /worker/roles/{categoryId}:
+ * /workers/roles/{categoryId}:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all worker roles by category
+ *     description: Public endpoint, returns roles that belong to the given categoryId
  *     parameters:
  *       - in: path
  *         name: categoryId
  *         required: true
  *         schema:
  *           type: string
- *         description: Category ID
- *     security:
- *       - bearerAuth: []
+ *         description: Category ID (uuid)
  *     responses:
  *       200:
  *         description: List of worker roles by category
- *       401:
- *         description: Unauthorized
  */
 router.get("/roles/:categoryId", validate(categoryIdSchema, "params"), workerController.getRolesByCategoryController);
 
 /**
  * @openapi
- * /worker/specialities/{roleId}:
+ * /workers/specialities/{roleId}:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all worker specialities by role
+ *     description: Public endpoint, returns specialities for the provided roleId
  *     parameters:
  *       - in: path
  *         name: roleId
  *         required: true
  *         schema:
  *           type: string
- *         description: Role ID
- *     security:
- *       - bearerAuth: []
+ *         description: Role ID (uuid)
  *     responses:
  *       200:
  *         description: List of worker specialities by role
- *       401:
- *         description: Unauthorized
  */
 router.get("/specialities/:roleId", validate(roleIdSchema, "params"), workerController.getSpecialitiesByRoleIdController);
 
 /**
  * @openapi
- * /worker/work-types/{specialityId}:
+ * /workers/work-types/{specialityId}:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all worker work types by speciality
+ *     description: Public endpoint, returns work types for the provided specialityId
  *     parameters:
  *       - in: path
  *         name: specialityId
  *         required: true
  *         schema:
  *           type: string
- *         description: Speciality ID
- *     security:
- *       - bearerAuth: []
+ *         description: Speciality ID (uuid)
  *     responses:
  *       200:
  *         description: List of worker work types by speciality
- *       401:
- *         description: Unauthorized
  */
 router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), workerController.getWorkTypesBySpecialityIdController);
 
@@ -151,130 +130,129 @@ router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), 
 
 /**
  * @openapi
- * /worker/categories:
+ * /workers/categories:
  *   post:
  *     tags:
  *       - Worker
  *     summary: Create a new category
- *     security:
- *       - bearerAuth: []
+ *     description: Create a worker category. This endpoint validates using `createCategory` schema.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
  *             properties:
  *               name:
  *                 type: string
- *                 description: Category name
+ *                 description: Category name (required)
  *               description:
  *                 type: string
- *                 description: Category description
+ *                 description: Category description (optional)
  *     responses:
  *       201:
  *         description: Category created successfully
- *       401:
- *         description: Unauthorized
  */
 router.post("/categories", validate(createCategory, "body"), workerController.createCategoryController);
 
 /**
  * @openapi
- * /worker/roles:
+ * /workers/roles:
  *   post:
  *     tags:
  *       - Worker
  *     summary: Create a new role
- *     security:
- *       - bearerAuth: []
+ *     description: Create a role and link it to a categoryId (uuid)
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - categoryId
  *             properties:
  *               name:
  *                 type: string
- *                 description: Role name
+ *                 description: Role name (required)
  *               description:
  *                 type: string
- *                 description: Role description
+ *                 description: Role description (optional)
  *               categoryId:
  *                 type: string
- *                 description: Category ID
+ *                 description: Category ID (uuid, required)
  *     responses:
  *       201:
  *         description: Role created successfully
- *       401:
- *         description: Unauthorized
  */
 router.post("/roles", validate(createRole, "body"), workerController.createRoleController);
 
 /**
  * @openapi
- * /worker/specialities:
+ * /workers/specialities:
  *   post:
  *     tags:
  *       - Worker
  *     summary: Create a new speciality
- *     security:
- *       - bearerAuth: []
+ *     description: Create a speciality and link it to a roleId (uuid)
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - roleId
  *             properties:
  *               name:
  *                 type: string
- *                 description: Speciality name
+ *                 description: Speciality name (required)
  *               description:
  *                 type: string
- *                 description: Speciality description
+ *                 description: Speciality description (optional)
  *               roleId:
  *                 type: string
- *                 description: Role ID
+ *                 description: Role ID (uuid, required)
  *     responses:
  *       201:
  *         description: Speciality created successfully
- *       401:
- *         description: Unauthorized
  */
 router.post("/specialities", validate(createSpeciality, "body"), workerController.createSpecialityController);
 
 /**
  * @openapi
- * /worker/work-types:
+ * /workers/work-types:
  *   post:
  *     tags:
  *       - Worker
  *     summary: Create a new work type
- *     security:
- *       - bearerAuth: []
+ *     description: Create a work type and link it to a specialityId (uuid)
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - name
+ *               - specialityId
  *             properties:
  *               name:
  *                 type: string
- *                 description: Work type name
+ *                 description: Work type name (required)
  *               description:
  *                 type: string
- *                 description: Work type description
+ *                 description: Work type description (optional)
  *               specialityId:
  *                 type: string
- *                 description: Speciality ID
+ *                 description: Speciality ID (uuid, required)
  *     responses:
  *       201:
  *         description: Work type created successfully
- *       401:
- *         description: Unauthorized
  */
 router.post("/work-types", validate(createWorkType, "body"), workerController.createWorkTypeController);
 
@@ -282,42 +260,33 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
 
 /**
  * @openapi
- * /worker:
+ * /workers:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get all workers (admin)
+ *     description: Returns workers filtered by supplied query params. This endpoint requires authentication.
  *     parameters:
  *       - in: query
- *         name: status
+ *         name: categoryId
  *         schema:
  *           type: string
- *         description: Filter by user status (e.g. ACTIVE, INACTIVE)
+ *         description: Filter by worker category id (uuid)
  *       - in: query
- *         name: verification
+ *         name: roleId
  *         schema:
  *           type: string
- *         description: Filter by verification status (e.g. APPROVED, PENDING)
+ *         description: Filter by professional role id (uuid)
  *       - in: query
- *         name: category
+ *         name: specialtyId
  *         schema:
  *           type: string
- *         description: Filter by worker category
+ *         description: Filter by worker specialty id (uuid)
  *       - in: query
- *         name: role
+ *         name: workTypeId
  *         schema:
  *           type: string
- *         description: Filter by professional role
- *       - in: query
- *         name: specialty
- *         schema:
- *           type: string
- *         description: Filter by worker specialty
- *       - in: query
- *         name: workType
- *         schema:
- *           type: string
- *         description: Filter by preferred work type (e.g. Remote, Onsite, Hybrid)
+ *         description: Filter by preferred work type id (uuid)
  *       - in: query
  *         name: title
  *         schema:
@@ -332,7 +301,7 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *         name: payRate
  *         schema:
  *           type: number
- *         description: Filter by pay rate (minimum or exact depending on logic)
+ *         description: Filter by pay rate (minimum)
  *       - in: query
  *         name: jobType
  *         schema:
@@ -358,15 +327,12 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *     responses:
  *       200:
  *         description: List of workers
- *       401:
- *         description: Unauthorized
  */
-
-router.get("/", authenticate,  workerController.getWorkers);
+router.get("/", authenticate, workerController.getWorkers);
 
 /**
  * @openapi
- * /worker/{id}:
+ * /workers/{id}:
  *   get:
  *     tags:
  *       - Worker
@@ -392,7 +358,7 @@ router.get("/:id", validate(userIdSchema, "params"), authenticate, workerControl
 
 /**
  * @openapi
- * /worker/{id}/approve:
+ * /workers/{id}/approve:
  *   patch:
  *     tags:
  *       - Worker
@@ -418,7 +384,7 @@ router.patch("/:id/approve", validate(userIdSchema, "params"), authenticate, wor
 
 /**
  * @openapi
- * /worker/{id}/reject:
+ * /workers/{id}/reject:
  *   patch:
  *     tags:
  *       - Worker
@@ -444,7 +410,7 @@ router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, work
 
 /**
  * @openapi
- * /worker/{id}/details:
+ * /workers/{id}/details:
  *   patch:
  *     tags:
  *       - Worker
@@ -516,26 +482,55 @@ router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, work
 router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDetailsSchema, "body"), authenticate, workerController.updateWorkerDetails);
 
 /**
- * @swagger
- * /workerRegister:
+ * @openapi
+ * /workers/workerRegister:
  *   post:
  *     tags:
  *       - Worker
  *     summary: Register a new worker
+ *     description: Creates a new user with a worker profile. Validated by `workerRegistrationSchema`.
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - fullName
+ *               - email
+ *               - password
+ *               - role
+ *               - category
+ *               - professionalRole
+ *               - skills
+ *               - specialityIds
+ *               - workTypeIds
  *             properties:
- *               name:
+ *               fullName:
  *                 type: string
+ *                 description: Full name of the worker
  *               email:
+ *                 type: string
+ *                 format: email
+ *               phone:
  *                 type: string
  *               password:
  *                 type: string
+ *               role:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               professionalRole:
+ *                 type: string
  *               skills:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               specialityIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               workTypeIds:
  *                 type: array
  *                 items:
  *                   type: string
@@ -546,33 +541,6 @@ router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDe
  *                   format: uri
  *               availability:
  *                 type: object
- *                 properties:
- *                   days:
- *                     type: object
- *                     properties:
- *                       monday:
- *                         type: boolean
- *                       tuesday:
- *                         type: boolean
- *                       wednesday:
- *                         type: boolean
- *                       thursday:
- *                         type: boolean
- *                       friday:
- *                         type: boolean
- *                       saturday:
- *                         type: boolean
- *                       sunday:
- *                         type: boolean
- *                   time:
- *                     type: array
- *                     items:
- *                       type: string
- *                       enum: [morning, afternoon, evening, night]
- *               category:
- *                 type: string
- *               professionalRole:
- *                 type: string
  *               experience:
  *                 type: string
  *     responses:
@@ -585,19 +553,22 @@ router.post("/workerRegister", validate(workerRegistrationSchema, "body"), worke
 
 
 /**
- * @swagger
+ * @openapi
  * /workers/{workerId}/applications:
  *   get:
  *     tags:
  *       - Worker
  *     summary: Get job applications for a specific worker
+ *     description: Requires authentication. Returns job applications for the given workerId.
  *     parameters:
  *       - in: path
  *         name: workerId
  *         required: true
- *         description: ID of the worker
  *         schema:
  *           type: string
+ *         description: Worker ID (uuid)
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: List of job applications
@@ -607,25 +578,28 @@ router.post("/workerRegister", validate(workerRegistrationSchema, "body"), worke
 router.get("/:workerId/applications", validate(applicationsSchema, "params"), authenticate, workerController.getWorkerJobApplications);
 
 /**
- * @swagger
+ * @openapi
  * /workers/{workerId}/applications/{applicationId}/accept:
  *   patch:
  *     tags:
  *       - Worker
  *     summary: Accept a job assignment for a specific application
+ *     description: Worker accepts an assignment. Requires authentication.
  *     parameters:
  *       - in: path
  *         name: workerId
  *         required: true
- *         description: ID of the worker
  *         schema:
  *           type: string
+ *         description: Worker ID (uuid)
  *       - in: path
  *         name: applicationId
  *         required: true
- *         description: ID of the job application to accept
  *         schema:
  *           type: string
+ *         description: Job application ID (uuid)
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Job assignment accepted successfully
@@ -635,25 +609,28 @@ router.get("/:workerId/applications", validate(applicationsSchema, "params"), au
 router.patch("/:workerId/applications/:applicationId/accept", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.acceptJobAssignment);
 
 /**
- * @swagger
+ * @openapi
  * /workers/{workerId}/applications/{applicationId}/reject:
  *   patch:
  *     tags:
  *       - Worker
  *     summary: Reject a job assignment for a specific application
+ *     description: Worker rejects an assignment. Requires authentication.
  *     parameters:
  *       - in: path
  *         name: workerId
  *         required: true
- *         description: ID of the worker
  *         schema:
  *           type: string
+ *         description: Worker ID (uuid)
  *       - in: path
  *         name: applicationId
  *         required: true
- *         description: ID of the job application to reject
  *         schema:
  *           type: string
+ *         description: Job application ID (uuid)
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Job assignment rejected successfully

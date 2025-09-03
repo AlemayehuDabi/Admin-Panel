@@ -399,6 +399,7 @@ export const rejectAssignment = async (applicationId: string, workerId: string) 
 export const getWorkerJobApplications = async (workerId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { workerId },
+    orderBy: { appliedAt: "desc" },
     include: { job: { include: { company: true } }, worker: { include: { user: true } } }
   });
 }

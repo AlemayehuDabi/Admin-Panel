@@ -3,16 +3,18 @@ import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
 import validate from "../../middlewares/validate";
 import { applicationIdParamSchema, assignWorkerParamsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, updateJobSchema } from "./job.validation";
+import { authorize } from "../../middlewares/authorize";
 
 const router = Router();
 
 /**
  * @openapi
- * /job/{companyId}:
+ * /jobs/{companyId}:
  *   post:
  *     tags:
  *       - Job
  *     summary: Create a new job (authenticated)
+ *     description: Creates a job under the given companyId. Validated by `createJobSchema`.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -21,7 +23,7 @@ const router = Router();
  *         required: true
  *         schema:
  *           type: string
- *         description: Company ID to link the job to
+ *         description: Company ID (uuid)
  *     requestBody:
  *       required: true
  *       content:
@@ -62,7 +64,7 @@ const router = Router();
  *               additionalInfo:
  *                 type: string
  *     responses:
- *       200:
+ *       201:
  *         description: Job created
  *       400:
  *         description: Validation error
@@ -71,7 +73,7 @@ router.post("/:companyId", authenticate, validate(companyIdParamSchema, "params"
 
 /**
  * @openapi
- * /job/{id}:
+ * /jobs/{id}:
  *   patch:
  *     tags:
  *       - Job
@@ -131,7 +133,7 @@ router.patch("/:id", authenticate, validate(jobIdParamSchema, "params"), validat
 
 /**
  * @openapi
- * /job/{id}:
+ * /jobs/{id}:
  *   delete:
  *     tags:
  *       - Job
@@ -155,11 +157,12 @@ router.delete("/:id", authenticate, validate(jobIdParamSchema, "params"), jobCon
 
 /**
  * @openapi
- * /job:
+ * /jobs:
  *   get:
  *     tags:
  *       - Job
- *     summary: Get all jobs (authenticated)
+ *     summary: Get all jobs
+ *     description: Returns jobs filtered by query params. Requires authentication.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -172,6 +175,7 @@ router.delete("/:id", authenticate, validate(jobIdParamSchema, "params"), jobCon
  *         name: companyId
  *         schema:
  *           type: string
+ *         description: Company ID (uuid)
  *       - in: query
  *         name: jobLocation
  *         schema:
@@ -203,7 +207,7 @@ router.get("/", authenticate, validate(jobFiltersSchema, "query"), jobController
 
 /**
  * @openapi
- * /job/{id}:
+ * /jobs/{id}:
  *   get:
  *     tags:
  *       - Job
@@ -227,11 +231,12 @@ router.get("/:id", authenticate, validate(jobIdParamSchema, "params"), jobContro
 
 /**
  * @openapi
- * /job/applications/{applicationId}/accept:
+ * /jobs/applications/{applicationId}/accept:
  *   patch:
  *     tags:
  *       - Job
  *     summary: Accept a worker application (authenticated)
+ *     description: Accepts a worker application by applicationId. Requires authentication.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -240,7 +245,7 @@ router.get("/:id", authenticate, validate(jobIdParamSchema, "params"), jobContro
  *         required: true
  *         schema:
  *           type: string
- *         description: Application ID to accept
+ *         description: Application ID (uuid)
  *     responses:
  *       200:
  *         description: Application accepted
@@ -249,9 +254,10 @@ router.get("/:id", authenticate, validate(jobIdParamSchema, "params"), jobContro
  */
 router.patch("/applications/:applicationId/accept", authenticate, jobController.acceptApplication);
 
+
 /**
  * @openapi
- * /job/applications/{applicationId}/reject:
+ * /jobs/applications/{applicationId}/reject:
  *   patch:
  *     tags:
  *       - Job
@@ -271,15 +277,16 @@ router.patch("/applications/:applicationId/accept", authenticate, jobController.
  *       404:
  *         description: Application not found
  */
+
 router.patch("/applications/:applicationId/reject", validate(applicationIdParamSchema, "params"), authenticate, jobController.rejectApplication);
 
 /**
- * @swagger
- * /job/{jobId}/assign/{workerId}:
+ * /jobs/{jobId}/assign/{workerId}:
  *   post:
  *     tags:
  *       - Job
  *     summary: Assign a worker to a job (authenticated)
+ *     description: Creates an assignment/application linking a worker to a job. Validates `jobId` and `workerId` as uuids.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -288,13 +295,13 @@ router.patch("/applications/:applicationId/reject", validate(applicationIdParamS
  *         required: true
  *         schema:
  *           type: string
- *         description: Job ID to assign the worker to
+ *         description: Job ID (uuid)
  *       - in: path
  *         name: workerId
  *         required: true
  *         schema:
  *           type: string
- *         description: Worker ID to assign to the job
+ *         description: Worker ID (uuid)
  *     responses:
  *       200:
  *         description: Worker assigned to job
@@ -303,4 +310,54 @@ router.patch("/applications/:applicationId/reject", validate(applicationIdParamS
  */
 router.post("/:jobId/assign/:workerId", validate(assignWorkerParamsSchema, "params"), authenticate, jobController.assignWorkerToJob);
 
+
+/**
+ * /jobs/admin/{applicationId}/approve:
+ *   patch:
+ *     tags:
+ *       - Job
+ *     summary: Approve a worker application (admin)
+ *     description: Admin endpoint to approve a work contract; requires authentication.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application ID (uuid)
+ *     responses:
+ *       200:
+ *         description: Application approved
+ *       404:
+ *         description: Application not found
+ */
+router.patch("/admin/:applicationId/approve", authenticate, validate(applicationIdParamSchema, "params"), jobController.approveWorkContract);
+
+/**
+ * /jobs/admin/{applicationId}/reject:
+ *   patch:
+ *     tags:
+ *       - Job
+ *     summary: Reject a worker application (admin)
+ *     description: Admin endpoint to reject a work contract; requires authentication and ADMIN authorization.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Application ID (uuid)
+ *     responses:
+ *       200:
+ *         description: Application rejected
+ *       404:
+ *         description: Application not found
+ */
+router.patch("/admin/:applicationId/reject", authenticate, authorize("ADMIN"), validate(applicationIdParamSchema, "params"), jobController.rejectWorkContract);
+
 export default router;
+
