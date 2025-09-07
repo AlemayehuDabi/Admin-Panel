@@ -2,8 +2,8 @@ import prisma from "../../config/prisma";
 import { JobStatus } from "@prisma/client";
 import { NotificationService } from "../notification/notification.service";
 import { NotificationRuleService } from "../notification/notificationRuleService";
-import { application } from "express";
-import { ap } from "@faker-js/faker/dist/airline-CLphikKp";
+import { sendEmail } from "../../utils/mailer";
+import { newJobEmail } from "../../utils/emailTemplates/newJob";
 
 // Create a new job
 export const createJob = async (data: {
@@ -20,6 +20,7 @@ export const createJob = async (data: {
 }, companyId: string) => {
   const company = await prisma.company.findUnique({
     where: { id: companyId },
+    include: { user: true },
   });
   if (!company) throw new Error("Company not found");
 
@@ -35,18 +36,49 @@ export const createJob = async (data: {
   (async () => {
     try {
       const userIds = await NotificationRuleService.getUsersForJob(job.id);
+
       if (userIds.length > 0) {
+        // Notify in-app
         await NotificationService.notifyUsers(
           userIds,
           "New Job Posted",
           `A new job "${job.title}" matches your profile`,
           "NEW_JOB"
         );
+
+        // Also send email
+        const users = await prisma.user.findMany({
+          where: { id: { in: userIds } },
+          select: { email: true },
+        });
+
+        await Promise.all(
+          users.map((user) =>
+            sendEmail(
+              user.email,
+              `🚀 New Job Alert: ${job.title} at ${company.user.fullName}`,
+              newJobEmail(
+                {
+                  ...job,
+                  jobLocation: job.jobLocation ?? undefined,
+                  jobType: job.jobType ?? undefined,
+                  startDate: job.startDate ?? undefined,
+                  duration: job.duration ?? undefined,
+                  additionalInfo: job.additionalInfo ?? undefined,
+                },
+                company.user.fullName
+              )
+            )
+          )
+        );
       }
     } catch (err) {
       console.error("Notification failed:", err);
     }
   })();
+
+
+
 
   return job;
 };

@@ -124,6 +124,15 @@ export const rejectWorker = async (req: Request, res: Response, next: NextFuncti
   }
 };
 
+export const updateWorker = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const worker = await workerService.workerUpdate(req.params.id, req.body);
+    res.json(successResponse(worker));
+  } catch (err: any) {
+    next(err);
+  }
+};
+
 export const updateWorkerDetails = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const worker = await workerService.upsertWorkerDetails(req.params.id, req.body);

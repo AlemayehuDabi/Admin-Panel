@@ -11,7 +11,7 @@ const router = Router();
  * /workers/categories:
  *   get:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Get all worker categories
  *     description: Public endpoint that returns available worker categories
  *     responses:
@@ -25,7 +25,7 @@ router.get("/categories", workerController.getCategoriesController);
  * /workers/roles:
  *   get:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Get all worker roles
  *     description: Public endpoint that returns all roles (includes category relation)
  *     responses:
@@ -39,7 +39,7 @@ router.get("/roles", workerController.getRolesController);
  * /workers/specialities:
  *   get:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Get all worker specialities
  *     description: Public endpoint that returns all specialities (includes role relation)
  *     responses:
@@ -53,7 +53,7 @@ router.get("/specialities", workerController.getSpecialitiesController);
  * /workers/work-types:
  *   get:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Get all worker work types
  *     description: Public endpoint that returns all work types (includes speciality relation)
  *     responses:
@@ -67,7 +67,7 @@ router.get("/work-types", workerController.getWorkTypesController);
  * /workers/roles/{categoryId}:
  *   get:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Get all worker roles by category
  *     description: Public endpoint, returns roles that belong to the given categoryId
  *     parameters:
@@ -88,7 +88,7 @@ router.get("/roles/:categoryId", validate(categoryIdSchema, "params"), workerCon
  * /workers/specialities/{roleId}:
  *   get:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Get all worker specialities by role
  *     description: Public endpoint, returns specialities for the provided roleId
  *     parameters:
@@ -109,7 +109,7 @@ router.get("/specialities/:roleId", validate(roleIdSchema, "params"), workerCont
  * /workers/work-types/{specialityId}:
  *   get:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Get all worker work types by speciality
  *     description: Public endpoint, returns work types for the provided specialityId
  *     parameters:
@@ -133,7 +133,7 @@ router.get("/work-types/:specialityId", validate(specialityIdSchema, "params"), 
  * /workers/categories:
  *   post:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Create a new category
  *     description: Create a worker category. This endpoint validates using `createCategory` schema.
  *     requestBody:
@@ -162,7 +162,7 @@ router.post("/categories", validate(createCategory, "body"), workerController.cr
  * /workers/roles:
  *   post:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Create a new role
  *     description: Create a role and link it to a categoryId (uuid)
  *     requestBody:
@@ -195,7 +195,7 @@ router.post("/roles", validate(createRole, "body"), workerController.createRoleC
  * /workers/specialities:
  *   post:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Create a new speciality
  *     description: Create a speciality and link it to a roleId (uuid)
  *     requestBody:
@@ -228,7 +228,7 @@ router.post("/specialities", validate(createSpeciality, "body"), workerControlle
  * /workers/work-types:
  *   post:
  *     tags:
- *       - Worker
+ *       - Worker-Category
  *     summary: Create a new work type
  *     description: Create a work type and link it to a specialityId (uuid)
  *     requestBody:
@@ -500,7 +500,7 @@ router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDe
  *               - email
  *               - password
  *               - role
- *               - category
+ *               - categoryId
  *               - professionalRole
  *               - skills
  *               - specialityIds
@@ -518,7 +518,7 @@ router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDe
  *                 type: string
  *               role:
  *                 type: string
- *               category:
+ *               categoryId:
  *                 type: string
  *               professionalRole:
  *                 type: string
@@ -540,7 +540,7 @@ router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDe
  *                   type: string
  *                   format: uri
  *               availability:
- *                 type: object
+ *                 $ref: "#/components/schemas/Availability"
  *               experience:
  *                 type: string
  *     responses:
@@ -551,6 +551,95 @@ router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDe
  */
 router.post("/workerRegister", validate(workerRegistrationSchema, "body"), workerController.registerWorker)
 
+/**
+ * @openapi
+ * /workers/{id}/update:
+ *   patch:
+ *     tags:
+ *       - Worker
+ *     summary: Update a worker (admin)
+ *     description: Update user/worker profile fields. At least one field must be provided in the body.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Worker user ID (uuid)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Fields to update (provide one or more)
+ *             properties:
+    *               fullName:
+    *                 type: string
+    *               email:
+    *                 type: string
+    *                 format: email
+    *               phone:
+    *                 type: string
+    *                 nullable: true
+    *               password:
+    *                 type: string
+    *               role:
+    *                 type: string
+    *               location:
+    *                 type: string
+    *                 nullable: true
+    *               categoryId:
+    *                 type: string
+    *                 format: uuid
+    *                 nullable: true
+    *               roleId:
+    *                 type: string
+    *                 format: uuid
+    *                 nullable: true
+    *               professionalRole:
+    *                 type: string
+    *               skills:
+    *                 type: array
+    *                 items:
+    *                   type: string
+    *               workType:
+    *                 type: array
+    *                 items:
+    *                   type: string
+    *               portfolio:
+    *                 type: array
+    *                 items:
+    *                   type: string
+    *                   format: uri
+    *               availability:
+    *                 $ref: "#/components/schemas/Availability"
+    *               experience:
+    *                 type: string
+    *               specialityIds:
+    *                 type: array
+    *                 items:
+    *                   type: string
+    *                   format: uuid
+    *               workTypeIds:
+    *                 type: array
+    *                 items:
+    *                   type: string
+    *                   format: uuid
+ *     responses:
+ *       200:
+ *         description: Worker updated successfully
+ *       400:
+ *         description: Validation error (invalid input or no fields provided)
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Worker not found
+ */
+router.patch("/:id/update", validate(userIdSchema, "params"), validate(workerDetailsSchema, "body"), authenticate, workerController.updateWorkerDetails);
 
 /**
  * @openapi

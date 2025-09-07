@@ -11,6 +11,33 @@ const options: swaggerJsdoc.Options = {
       description: "API documentation for Admin Panel backend",
     },
     components: {
+      schemas: {
+        Availability: {
+          type: "object",
+          properties: {
+            days: {
+              type: "object",
+              properties: {
+                monday: { type: "boolean" },
+                tuesday: { type: "boolean" },
+                wednesday: { type: "boolean" },
+                thursday: { type: "boolean" },
+                friday: { type: "boolean" },
+                saturday: { type: "boolean" },
+                sunday: { type: "boolean" },
+              },
+              additionalProperties: false,
+            },
+            time: {
+              type: "array",
+              items: {
+                type: "string",
+                enum: ["morning", "afternoon", "evening", "night"],
+              },
+            },
+          },
+        }
+      },
       securitySchemes: {
         bearerAuth: {
           type: "http",

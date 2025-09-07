@@ -1,6 +1,22 @@
 import z from "zod";
 
 
+const availabilityDaysSchema = z.object({
+  monday: z.boolean().optional(),
+  tuesday: z.boolean().optional(),
+  wednesday: z.boolean().optional(),
+  thursday: z.boolean().optional(),
+  friday: z.boolean().optional(),
+  saturday: z.boolean().optional(),
+  sunday: z.boolean().optional(),
+}).partial();
+
+const availabilitySchema = z.object({
+  days: availabilityDaysSchema.optional(),
+  time: z
+    .array(z.enum(["morning", "afternoon", "evening", "night"]))
+    .optional(),
+}).optional();
 
 export const userIdSchema = z.object({
   id: z.uuid("Invalid User Id or Not Found")
@@ -17,8 +33,6 @@ export const applicationsSchema = z.object({
 export const workerIdSchema = z.object({
   workerId: z.uuid("Invalid Worker Id or Not Found")
 });
-
-
 
 export const roleIdSchema = z.object({
   roleId: z.uuid("Invalid Role Id or Not Found")
@@ -40,13 +54,50 @@ export const workerRegistrationSchema = z.object({
   categoryId: z.string().min(1, "Category is required"),
   professionalRole: z.string().min(1, "Professional role is required"),
   skills: z.array(z.string()).nonempty("At least one skill required"),
-  portfolio: z.array(z.string().url("Portfolio must be valid URL")).optional(),
-  availability: z.record(z.string(), z.string()).optional(), // flexible JSON object
+  portfolio: z.array(z.url("Portfolio must be valid URL")).optional(),
+  availability: z.object({
+    days: z.object({
+      monday: z.boolean().optional(),
+      tuesday: z.boolean().optional(),
+      wednesday: z.boolean().optional(),
+      thursday: z.boolean().optional(),
+      friday: z.boolean().optional(),
+      saturday: z.boolean().optional(),
+      sunday: z.boolean().optional(),
+    }).optional(),
+    time: z.array(z.enum(["morning", "afternoon", "evening", "night"])).optional(),
+  }).optional(),
   experience: z.string().optional(),
 
   // Relations
   specialityIds: z.array(z.uuid("Invalid speciality id")).nonempty("Select at least one speciality"),
   workTypeIds: z.array(z.uuid("Invalid work type id")).nonempty("Select at least one work type"),
+});
+
+export const workerUpdateSchema = z.object({
+  // user fields
+  fullName: z.string().min(2).optional(),
+  email: z.string().email("Invalid email").optional(),
+  phone: z.string().optional(),
+  password: z.string().min(6, "Password must be at least 6 characters").optional(),
+  role: z.string().optional(), // consider enum if you have one
+  location: z.string().optional(),
+
+  // worker profile updates (optional)
+  categoryId: z.string().uuid().optional().nullable(),
+  roleId: z.string().uuid().optional().nullable(),
+  professionalRole: z.string().optional(),
+  skills: z.array(z.string()).optional(),
+  workType: z.array(z.string()).optional(),
+  portfolio: z.array(z.string().url("Portfolio must be valid URL")).optional(),
+  availability: availabilitySchema,
+  experience: z.string().optional(),
+
+  // relations: if provided, they will replace current ones
+  specialityIds: z.array(z.string().uuid("Invalid speciality id")).optional(),
+  workTypeIds: z.array(z.string().uuid("Invalid work type id")).optional(),
+}).refine((obj) => Object.keys(obj).length > 0, {
+  message: "Provide at least one field to update",
 });
 
 export const workerDetailsSchema = z.object({
@@ -111,3 +162,5 @@ export const workerSchema = z.object({
 export type UserId = z.infer<typeof userIdSchema>;
 export type WorkerRegistrationInput = z.infer<typeof workerRegistrationSchema>;
 export type workerDetailsInput = z.infer<typeof workerDetailsSchema>;
+export type WorkerDetailsInput = z.infer<typeof workerDetailsSchema>;
+export type WorkerUpdateInput = z.infer<typeof workerUpdateSchema>;

@@ -1,7 +1,6 @@
 import prisma from "../../config/prisma";
 import { VerificationStatus, UserStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
-import { workerDetailsInput } from "./worker.validation"
 import { NotificationService } from "../notification/notification.service";
 
 // Get all workers (optionally filter by verification or status)
@@ -17,6 +16,31 @@ interface WorkerFilter {
   startDate?: Date;
   requiredSkills?: string[];
 }
+
+type UpdateWorkerData = {
+  fullName?: string;
+  email?: string;
+  phone?: string | null;
+  password?: string;
+  role?: string;
+  location?: string | null;
+
+  // Worker fields
+  categoryId?: string | null;
+  roleId?: string | null; // Role relation id in Worker
+  professionalRole?: string | null;
+  skills?: string[] | null;
+  workType?: string[] | null;     // scalar string[] on Worker
+  portfolio?: string[] | null;    // scalar string[] on Worker
+  availability?: any | null;      // JSON
+  experience?: string | null;
+  profilePhoto?: string | null;
+  badges?: string[] | null;
+
+  // relations (many-to-many through join tables)
+  specialityIds?: string[] | null; // if provided -> replace
+  workTypeIds?: string[] | null;   // if provided -> replace
+};
 
 export const filterWorkers = async (filters: WorkerFilter) => {
   return prisma.worker.findMany({
@@ -127,13 +151,133 @@ export const workerRegister = async (data: any) => {
 
 };
 
+
+export const workerUpdate = async (workerUserId: string, data: UpdateWorkerData) => {
+  // 1) ensure user exists
+  const existingUser = await prisma.user.findUnique({
+    where: { id: workerUserId },
+  });
+  if (!existingUser) throw new Error("User not found");
+
+  // 2) ensure worker profile exists
+  const existingWorker = await prisma.worker.findUnique({
+    where: { userId: workerUserId },
+    include: { specialities: true, workTypes: true },
+  });
+  if (!existingWorker) throw new Error("Worker profile not found");
+
+  // 3) uniqueness checks (only when changed)
+  if (data.email && data.email !== existingUser.email) {
+    const emailTaken = await prisma.user.findUnique({ where: { email: data.email } });
+    if (emailTaken) throw new Error("Email already taken");
+  }
+  // phone is nullable in your model — check only when provided and changed
+  if (data.phone !== undefined && data.phone !== existingUser.phone) {
+    if (data.phone !== null) {
+      const phoneTaken = await prisma.user.findUnique({ where: { phone: data.phone } });
+      if (phoneTaken) throw new Error("Phone number already taken");
+    }
+  }
+
+  // 4) prepare user update payload
+  const userUpdateData: any = {};
+  if (data.fullName !== undefined) userUpdateData.fullName = data.fullName;
+  if (data.email !== undefined) userUpdateData.email = data.email;
+  if (data.phone !== undefined) userUpdateData.phone = data.phone;
+  if (data.role !== undefined) userUpdateData.role = data.role;
+  if (data.location !== undefined) userUpdateData.location = data.location;
+
+  if (data.password) {
+    const passwordHash = await bcrypt.hash(data.password, 10);
+    userUpdateData.passwordHash = passwordHash;
+    // optionally bump tokenVersion so old tokens are invalidated:
+    userUpdateData.tokenVersion = { increment: 1 };
+  }
+
+  // 5) prepare worker update payload
+  const workerUpdateData: any = {};
+  if (data.categoryId !== undefined) workerUpdateData.categoryId = data.categoryId;
+  if (data.roleId !== undefined) workerUpdateData.roleId = data.roleId;
+  if (data.professionalRole !== undefined) workerUpdateData.professionalRole = data.professionalRole;
+  if (data.skills !== undefined) workerUpdateData.skills = data.skills;
+  if (data.workType !== undefined) workerUpdateData.workType = data.workType;
+  if (data.portfolio !== undefined) workerUpdateData.portfolio = data.portfolio;
+  if (data.availability !== undefined) workerUpdateData.availability = data.availability;
+  if (data.experience !== undefined) workerUpdateData.experience = data.experience;
+  if (data.profilePhoto !== undefined) workerUpdateData.profilePhoto = data.profilePhoto;
+  if (data.badges !== undefined) workerUpdateData.badges = data.badges;
+
+  // Replace specialities relation if provided
+  if (data.specialityIds) {
+    workerUpdateData.specialities = {
+      deleteMany: {}, // remove existing WorkerSpeciality rows for this worker
+      create: (data.specialityIds || []).map((id) => ({
+        speciality: { connect: { id } },
+      })),
+    };
+  }
+
+  // Replace workTypes relation if provided (WorkerWorkType join table)
+  if (data.workTypeIds) {
+    workerUpdateData.workTypes = {
+      deleteMany: {},
+      create: (data.workTypeIds || []).map((id) => ({
+        workType: { connect: { id } },
+      })),
+    };
+  }
+
+  // 6) run updates in transaction (atomic)
+  const [_, updatedWorker] = await prisma.$transaction([
+    // update user if there is anything to update
+    Object.keys(userUpdateData).length
+      ? prisma.user.update({ where: { id: workerUserId }, data: userUpdateData })
+      : prisma.user.findUnique({ where: { id: workerUserId } }),
+
+    // update worker
+    prisma.worker.update({
+      where: { userId: workerUserId },
+      data: workerUpdateData,
+      include: {
+        specialities: { include: { speciality: true } },
+        workTypes: { include: { workType: true } },
+      },
+    }),
+  ]);
+
+  // 7) return the user with populated workerProfile
+  const result = await prisma.user.findUnique({
+    where: { id: workerUserId },
+    include: {
+      workerProfile: {
+        include: {
+          category: true,
+          Role: true,
+          specialities: { include: { speciality: true } },
+          workTypes: { include: { workType: true } },
+        },
+      },
+    },
+  });
+
+  return result;
+};
+
 // Approve a worker (set verification to APPROVED)
-export const approveWorker = async (workerId: string) => {
-  const worker = await prisma.worker.findUnique({ where: { id: workerId } });
+export const approveWorker = async (userId: string) => {
+  const worker = await prisma.user.findUnique({ where: { id: userId } });
+
   if (!worker) throw new Error("Worker not found");
 
+  await NotificationService.notifyUser(
+    userId,
+    "Your application has been approved",
+    `Congratulations ${worker.fullName}, your application has been approved.`,
+    "JOB_RESPONSE"
+  );
+
   return prisma.user.update({
-    where: { id: worker.userId },
+    where: { id: userId },
     data: { verification: VerificationStatus.APPROVED, status: UserStatus.ACTIVE },
   });
 };

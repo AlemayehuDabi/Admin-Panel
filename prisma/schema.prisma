@@ -171,10 +171,10 @@ model Job {
   numbersNeedWorker Int       @default(1)
   additionalInfo    String?
   status            JobStatus @default(ACTIVE)
-  company           Company   @relation(fields: [companyId], references: [id])
   companyId         String
 
   //
+  company           Company   @relation(fields: [companyId], references: [id])
   applications WorkerJobApplication[]
   createdAt    DateTime               @default(now())
 }
