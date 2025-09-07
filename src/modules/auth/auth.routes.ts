@@ -151,4 +151,61 @@ router.post("/approve/:userId", validate(validateSchema.authValidationApproveUse
  */
 router.post("/reject/:userId", validate(validateSchema.authValidationApproveUserSchema, "params"), authController.rejectUser);
 
+/**
+ * @openapi
+ * /auth/request-password-reset:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Request a password reset code to be sent via email
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *     responses:
+ *       200:
+ *         description: Reset code sent to email
+ *       400:
+ *         description: Bad request or user not found
+ */
+router.post("/request-password-reset", validate(validateSchema.authValidationRequestPasswordResetSchema, "body"), authController.requestPasswordReset);
+
+/**
+ * @openapi
+ * /auth/verify-reset-code:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Verify password reset code
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - code
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Reset code verified successfully
+ *       400:
+ *         description: Invalid code or email
+ */
+router.post("/verify-reset-code", validate(validateSchema.authValidationVerifyResetCodeSchema, "body"), authController.verifyResetCode);
+
 export default router;

@@ -1,9 +1,16 @@
 // src/modules/auth/auth.service.ts
 import prisma from "../../config/prisma";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { ENV } from "../../config/env";
 import { UserStatus, VerificationStatus } from "@prisma/client";
+import { sendResetEmail } from "../../utils/mailer";
+
+
+function generateCode(): string {
+  return crypto.randomBytes(3).toString("hex").toUpperCase(); // 6-character hex code
+}
 
 export const register = async (data: any) => {
   const { fullName, phone, email, password, role, location } = data;
@@ -107,4 +114,43 @@ export const rejectUser = async (userId: string) => {
       status: UserStatus.REJECTED,
     },
   });
+};
+
+export const requestPasswordReset = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return { status: 404, message: "User not found" };
+  const code = generateCode();
+  await prisma.passwordReset.create({
+    data: {
+      userId: user.id,
+      code,
+      expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
+    },
+  });
+  await sendResetEmail(email, code);
+  return `Reset code sent to ${email}`;
+}
+
+export const verifyResetCode = async (email: string, code: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) return { status: 404, message: "User not found" };
+
+  const reset = await prisma.passwordReset.findFirst({
+    where: {
+      userId: user.id,
+      code,
+      used: false,
+      expiresAt: { gt: new Date() },
+    },
+  });
+
+  if (!reset) throw new Error("Invalid or expired code");
+
+  // mark code as used
+  await prisma.passwordReset.update({
+    where: { id: reset.id },
+    data: { used: true },
+  });
+
+  return "Code verified successfully" ;
 };

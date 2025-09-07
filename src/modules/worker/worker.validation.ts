@@ -96,7 +96,7 @@ export const workerUpdateSchema = z.object({
   // relations: if provided, they will replace current ones
   specialityIds: z.array(z.string().uuid("Invalid speciality id")).optional(),
   workTypeIds: z.array(z.string().uuid("Invalid work type id")).optional(),
-}).refine((obj) => Object.keys(obj).length > 0, {
+}).refine((obj: any) => Object.keys(obj).length > 0, {
   message: "Provide at least one field to update",
 });
 

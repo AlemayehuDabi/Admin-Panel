@@ -89,6 +89,7 @@ model User {
   wallet         Wallet?
   Review         Review[]
   Notification   Notification[]
+  PasswordReset  PasswordReset[]
 
   @@index([referredBy]) // <— NEW
 }
@@ -117,6 +118,16 @@ model Worker {
   applications WorkerJobApplication[]
   Role         Role?                  @relation(fields: [roleId], references: [id])
   roleId       String?
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model License {
@@ -174,7 +185,7 @@ model Job {
   companyId         String
 
   //
-  company           Company   @relation(fields: [companyId], references: [id])
+  company      Company                @relation(fields: [companyId], references: [id])
   applications WorkerJobApplication[]
   createdAt    DateTime               @default(now())
 }

@@ -22,6 +22,15 @@ export const authValidationApproveUserSchema = z.object({
     userId: z.uuid({ message: 'Invalid user ID or not found' }),
 });
 
+export const authValidationRequestPasswordResetSchema = z.object({
+    email: z.email({ message: 'Invalid email address' }),
+});
+
+export const authValidationVerifyResetCodeSchema = z.object({
+    email: z.email({ message: 'Invalid email address' }),
+    code: z.string().length(6, { message: 'Code must be 6 characters long' }),
+});
+
 
 
 export type AuthValidationInput = z.infer<typeof authValidationRegisterSchema>;

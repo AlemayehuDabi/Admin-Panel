@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import * as authService from "./auth.service";
 import { successResponse, errorResponse } from "../../utils/response";
 
@@ -48,3 +48,21 @@ export const rejectUser = async (req: Request, res: Response) => {
     res.status(400).json(errorResponse(error.message));
   }
 };
+
+export const requestPasswordReset = async (req: Request, res: Response, next: NextFunction) => {
+  const { email } = req.body;
+  try {
+    res.status(200).json(successResponse(await authService.requestPasswordReset(email), "Reset code sent to email"));
+  } catch (error: any) {
+    next(error);
+  }
+}
+
+export const verifyResetCode = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, code } = req.body;
+  try {
+    res.status(200).json(successResponse(await authService.verifyResetCode(email, code), "Code verified successfully"));
+  } catch (error: any) {
+    next(error);
+  }
+}
