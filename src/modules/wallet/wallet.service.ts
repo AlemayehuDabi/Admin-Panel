@@ -71,3 +71,23 @@ export const getTransactions = async (walletId: string, type?: TransactionType) 
     orderBy: { createdAt: "desc" },
   });
 };
+
+
+// Get transaction by ID
+export const getTransactionById = async (id: string) => {
+  return prisma.transaction.findUnique({
+    where: { id },
+  });
+};
+
+// Get transaction by UserId
+export const getTransactionByUserId = async (userId: string) => {
+  const wallet = await prisma.wallet.findFirst({ where: { userId } });
+  if (!wallet) throw new Error("User Wallet not found");
+
+  return prisma.transaction.findMany({
+    where: { walletId: wallet.id },
+    orderBy: { createdAt: "desc" },
+  });
+};
+

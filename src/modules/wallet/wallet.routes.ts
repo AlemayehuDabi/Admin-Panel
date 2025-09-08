@@ -1,12 +1,14 @@
 import { Router } from "express";
+import validate from "../../middlewares/validate"
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as walletController from "./wallet.controller";
+import * as schema from "./wallet.validation"
 
 const router = Router();
 
 /**
  * @openapi
- * /wallet:
+ * /wallets:
  *   get:
  *     tags:
  *       - Wallet
@@ -23,7 +25,7 @@ router.get("/", authenticate, walletController.getAllWallets);
 
 /**
  * @openapi
- * /wallet/{userId}:
+ * /wallets/{userId}:
  *   get:
  *     tags:
  *       - Wallet
@@ -45,11 +47,11 @@ router.get("/", authenticate, walletController.getAllWallets);
  *       404:
  *         description: Wallet not found
  */
-router.get("/:userId", authenticate, walletController.getWalletByUserId);
+router.get("/:userId", validate(schema.userIdSchema, "params"), authenticate, walletController.getWalletByUserId);
 
 /**
  * @openapi
- * /wallet/{userId}/create:
+ * /wallets/{userId}/create:
  *   post:
  *     tags:
  *       - Wallet
@@ -71,11 +73,11 @@ router.get("/:userId", authenticate, walletController.getWalletByUserId);
  *       401:
  *         description: Unauthorized
  */
-router.post("/:userId/create", authenticate, walletController.createWallet);
+router.post("/:userId/create", validate(schema.userIdSchema, "params"), authenticate, walletController.createWallet);
 
 /**
  * @openapi
- * /wallet/{userId}/adjust:
+ * /wallets/{userId}/adjust:
  *   patch:
  *     tags:
  *       - Wallet
@@ -112,11 +114,11 @@ router.post("/:userId/create", authenticate, walletController.createWallet);
  *       401:
  *         description: Unauthorized
  */
-router.patch("/:userId/adjust", authenticate, walletController.adjustWalletBalance);
+router.patch("/:userId/adjust", validate(schema.userIdSchema, "params"), authenticate, walletController.adjustWalletBalance);
 
 /**
  * @openapi
- * /wallet/{walletId}/transactions:
+ * /wallets/{walletId}/transactions:
  *   get:
  *     tags:
  *       - Wallet
@@ -143,6 +145,58 @@ router.patch("/:userId/adjust", authenticate, walletController.adjustWalletBalan
  *       404:
  *         description: Wallet not found
  */
-router.get("/:walletId/transactions", authenticate, walletController.getTransactions);
+router.get("/:walletId/transactions", validate(schema.walletIdSchema, "params"), authenticate, walletController.getTransactions);
+
+/**
+ * @openapi
+ * /wallets/{transactionId}/transaction:
+ *   get:
+ *     tags:
+ *       - Wallet
+ *     summary: Get a single transaction by its ID (admin)
+ *     parameters:
+ *       - in: path
+ *         name: transactionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Transaction ID
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Transaction object
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Transaction not found
+ */
+router.get("/:transactionId/transaction", validate(schema.transactionIdSchema, "params"), authenticate, walletController.getTransactionById);
+
+/**
+ * @openapi
+ * /wallets/{userId}/user-transaction:
+ *   get:
+ *     tags:
+ *       - Wallet
+ *     summary: Get transactions for a user by user ID (admin)
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ID to fetch transactions for
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of transactions for the user
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: User or transactions not found
+ */
+router.get("/:userId/user-transaction", validate(schema.userIdSchema, "params"), authenticate, walletController.getTransactionByUserId)
 
 export default router;

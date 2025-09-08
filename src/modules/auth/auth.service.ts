@@ -6,6 +6,7 @@ import jwt from "jsonwebtoken";
 import { ENV } from "../../config/env";
 import { UserStatus, VerificationStatus } from "@prisma/client";
 import { sendResetEmail } from "../../utils/mailer";
+import { el } from "@faker-js/faker/.";
 
 
 function generateCode(): string {
@@ -49,59 +50,70 @@ export const login = async (data: any) => {
   if (!valid) throw new Error("Invalid email or password");
 
   if (user.status === "INACTIVE") throw new Error("Account is deactivated");
-  if (user.verification !== "APPROVED")
-    throw new Error("Account not verified by admin");
+  if (user.verification !== "APPROVED") throw new Error("Account not verified by admin");
 
   await prisma.user.update({
     where: { id: user.id },
     data: { tokenVersion: 0 },
   });
 
-  // include tokenVersion in the token
-  const token = jwt.sign(
-    { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },
-    ENV.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  return { token, user };
+  // User profile
+  if (user.role === "WORKER") {
+    const worker = await prisma.worker.findUnique({ where: { userId: user.id } });
+    if (!worker) throw new Error("Worker profile not found");
+    return {
+      token: jwt.sign(
+        { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },
+        ENV.JWT_SECRET,
+        { expiresIn: "7d" }
+      ), user, worker
+    };
+  } else if (user.role === "COMPANY") {
+    const company = await prisma.company.findUnique({ where: { userId: user.id } });
+    if (!company) throw new Error("Company profile not found");
+    return {
+      token: jwt.sign(
+        { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },
+        ENV.JWT_SECRET,
+        { expiresIn: "7d" }
+      ), user, company
+    };
+  }
+  
 };
 
-export const workerLogin = async (data: any) => {
-  const { email, password } = data;
-
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) throw new Error("Invalid email or password");
-  const worker = await prisma.worker.findUnique({ where: { userId: user.id }, include: { user: true } });
-
-  const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) throw new Error("Invalid email or password");
-
-  if (user.status === "INACTIVE") throw new Error("Account is deactivated");
-  if (user.verification !== "APPROVED")
-    throw new Error("Account not verified by admin");
-
+export const logout = async (userId: string) => {
   await prisma.user.update({
-    where: { id: user.id },
-    data: { tokenVersion: 0 },
+    where: { id: userId },
+    data: { tokenVersion: { increment: 1 } },
   });
 
-  // include tokenVersion in the token
-  const token = jwt.sign(
-    { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },
-    ENV.JWT_SECRET,
-    { expiresIn: "7d" }
-  );
-
-  return { token, user, worker };
+  return { message: "Logged out successfully" };
 };
+
+export const activateUser = async (userId: string) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      status: UserStatus.ACTIVE,
+    },
+  });
+}
+
+export const deactivateUser = async (userId: string) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      status: UserStatus.INACTIVE,
+    },
+  });
+}
 
 export const approveUser = async (userId: string) => {
   return prisma.user.update({
     where: { id: userId },
     data: {
       verification: VerificationStatus.APPROVED,
-      status: UserStatus.ACTIVE,
     },
   });
 };
@@ -111,7 +123,6 @@ export const rejectUser = async (userId: string) => {
     where: { id: userId },
     data: {
       verification: VerificationStatus.REJECTED,
-      status: UserStatus.REJECTED,
     },
   });
 };
@@ -152,5 +163,5 @@ export const verifyResetCode = async (email: string, code: string) => {
     data: { used: true },
   });
 
-  return "Code verified successfully" ;
+  return "Code verified successfully";
 };

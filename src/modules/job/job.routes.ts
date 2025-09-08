@@ -281,6 +281,7 @@ router.patch("/applications/:applicationId/accept", authenticate, jobController.
 router.patch("/applications/:applicationId/reject", validate(applicationIdParamSchema, "params"), authenticate, jobController.rejectApplication);
 
 /**
+ * @openapi
  * /jobs/{jobId}/assign/{workerId}:
  *   post:
  *     tags:

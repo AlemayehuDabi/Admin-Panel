@@ -1,5 +1,5 @@
 // services/notificationService.ts
-import  prisma  from "../../config/prisma";
+import prisma from "../../config/prisma";
 import { sseManager } from "../../infrastructure/notifications/sseManager";
 import { NotificationType } from "@prisma/client"
 
@@ -39,4 +39,27 @@ export class NotificationService {
     const notification = { message, type, createdAt: new Date() };
     sseManager.broadcast("notification", notification);
   }
+
+  // Fetch notifications helpers
+  static async getNotificationsForUser() {
+    return prisma.notification.findMany({
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  static async getUserNotifications(userId: string) {
+    return prisma.notification.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  static async isRead(notificationId: string) {
+    const notification = await prisma.notification.update({
+      where: { id: notificationId },
+      data: { isRead: true },
+    });
+    return notification;
+  }
 }
+

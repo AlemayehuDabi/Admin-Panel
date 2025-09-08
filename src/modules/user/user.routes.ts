@@ -167,7 +167,7 @@ router.patch("/:id/deactivate", validate(userIdSchema, "params"), UserController
  * /users/{id}/reset-password:
  *   post:
  *     tags:
- *       - Users
+ *       - Auth
  *     summary: Reset a user's password (admin)
  *     security:
  *       - bearerAuth: []

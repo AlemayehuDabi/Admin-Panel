@@ -11,7 +11,7 @@ export function resetEmailHtml(
   const appName = opts?.appName ?? "YourApp";
   const supportEmail = opts?.supportEmail ?? "support@yourdomain.com";
   const brand = opts?.brandColor ?? "#3b82f6"; // default blue
-  const logoUrl = opts?.logoUrl ?? "https://via.placeholder.com/180x60.png?text=Your+Logo";
+  const logoUrl = opts?.logoUrl ?? "https://simbatech.et/assets/logo-M8d1WI2n.png";
 
   // split the code into styled boxes
   const codeBoxes = code
@@ -92,7 +92,7 @@ export function resetEmailHtml(
           <tr>
             <td align="center" style="padding:10px 20px 30px;">
               <a href="https://yourapp.com" 
-                 style="display:inline-block;background:linear-gradient(90deg,${brand},#2563eb);color:#ffffff;text-decoration:none;
+                 style="display:inline-block;background:linear-gradient(90deg,#2563eb,#2563eb);color:#ffffff;text-decoration:none;
                         padding:14px 24px;border-radius:12px;font-size:15px;font-weight:600;">
                 Open ${appName}
               </a>

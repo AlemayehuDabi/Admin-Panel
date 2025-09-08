@@ -36,7 +36,7 @@ export const sendResetEmail = async (email: string, code: string) => {
       html: resetEmailHtml(code, {
         appName: "Hulu Constructions", // your app name
         supportEmail: "support@hulconst.com", // your support
-        brandColor: "#104D86", // optional brand color
+        brandColor: "#ffffffff", // optional brand color
         logoUrl: "https://simbatech.et/assets/logo-M8d1WI2n.png", // optional logo
       }),
       text: resetEmailText(code, "Hulu Constructions"),

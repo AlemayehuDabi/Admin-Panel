@@ -20,10 +20,21 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const workerLogin = async (req: Request, res: Response) => {
+export const activateUser = async (req: Request, res: Response) => {
   try {
-    const token = await authService.workerLogin(req.body);
-    res.json(successResponse(token, "Login successful"));
+    const { userId } = req.params;
+    const user = await authService.activateUser(userId);
+    res.json(successResponse(user, "User activated successfully"));
+  } catch (error: any) {
+    res.status(400).json(errorResponse(error.message));
+  }
+};
+
+export const deactivateUser = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    const user = await authService.deactivateUser(userId);
+    res.json(successResponse(user, "User deactivated successfully"));
   } catch (error: any) {
     res.status(400).json(errorResponse(error.message));
   }
@@ -52,7 +63,7 @@ export const rejectUser = async (req: Request, res: Response) => {
 export const requestPasswordReset = async (req: Request, res: Response, next: NextFunction) => {
   const { email } = req.body;
   try {
-    res.status(200).json(successResponse(await authService.requestPasswordReset(email), "Reset code sent to email"));
+    res.status(200).json(successResponse(await authService.requestPasswordReset(email), `Reset code sent to npm run dev${email}`));
   } catch (error: any) {
     next(error);
   }
