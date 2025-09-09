@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { uploadProfilePicture, uploadNationalId, uploadCompanyFileController, uploadWorkerFileController } from "./storage.controller";
+import { uploadProfilePicture, uploadNationalId, uploadCompanyFileController, uploadWorkerFileController, uploadPaymentReceipt } from "./storage.controller";
 import { upload } from "../../middlewares/upload";
 import validate from "../../middlewares/validate";
 import { authenticate } from "../../middlewares/authMiddleware";
@@ -163,5 +163,40 @@ router.post("/profile-picture", upload.single("file"), validate(uploadProfilePic
  */
 
 router.post("/worker/national-id", upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadNationalId);
+
+/**
+ * @openapi
+ * /storage/payment-receipt:
+ *   post:
+ *     tags:
+ *       - Storage
+ *     summary: Upload a payment receipt (authenticated)
+ *     description: Uploads a payment receipt. Request must be multipart/form-data with field name `file`.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       201:
+ *         description: Profile picture uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FileResponse'
+ *       400:
+ *         description: No file uploaded or validation error
+ *       500:
+ *         description: Server error
+ */
+
+router.post("/payment-receipt", upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadPaymentReceipt);
 
 export default router;

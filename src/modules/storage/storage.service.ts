@@ -33,6 +33,19 @@ export const profilePicture = async (key: string, fileBuffer: Buffer, contentTyp
   return url;
 };
 
+export const paymentReceipt = async (key: string, fileBuffer: Buffer, contentType: string) => {
+  const command = new PutObjectCommand({
+    Bucket: BUCKET,
+    Key: key,
+    Body: fileBuffer,
+    ContentType: contentType,
+  });
+
+  await r2.send(command);
+  const url = await getSignedUrl(key, 3600);
+  return url;
+};
+
 export const getSignedUrl = async (key: string, expiresIn = 3600) => {
   const command = new GetObjectCommand({
     Bucket: BUCKET,

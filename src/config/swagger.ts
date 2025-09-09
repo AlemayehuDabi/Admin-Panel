@@ -37,6 +37,78 @@ const options: swaggerJsdoc.Options = {
             },
           },
         }
+        ,
+        Plan: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            description: { type: "string" },
+            price: { type: "integer", description: "price in cents" },
+            interval: { type: "string", enum: ["MONTHLY", "YEARLY"] },
+            features: { type: "array", items: { type: "string" } },
+            status: { type: "string", enum: ["ACTIVE", "INACTIVE"] },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        PlanCreate: {
+          type: "object",
+          required: ["name", "price", "interval"],
+          properties: {
+            name: { type: "string" },
+            description: { type: "string" },
+            price: { type: "integer" },
+            interval: { type: "string", enum: ["MONTHLY", "YEARLY"] },
+            features: { type: "array", items: { type: "string" } },
+            status: { type: "string", enum: ["ACTIVE", "INACTIVE"] }
+          }
+        },
+        PlanUpdate: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            description: { type: "string" },
+            price: { type: "integer" },
+            interval: { type: "string", enum: ["MONTHLY", "YEARLY"] },
+            features: { type: "array", items: { type: "string" } },
+            status: { type: "string", enum: ["ACTIVE", "INACTIVE"] }
+          }
+        },
+        Bank: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            accountName: { type: "string" },
+            accountNo: { type: "string" },
+            type: { type: "string", enum: ["BANK", "WALLET"] },
+            status: { type: "string", enum: ["ACTIVE", "INACTIVE"] },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        BankCreate: {
+          type: "object",
+          required: ["name", "accountName", "accountNo", "type"],
+          properties: {
+            name: { type: "string" },
+            accountName: { type: "string" },
+            accountNo: { type: "string" },
+            type: { type: "string", enum: ["BANK", "WALLET"] },
+            status: { type: "string", enum: ["ACTIVE", "INACTIVE"] }
+          }
+        },
+        BankUpdate: {
+          type: "object",
+          properties: {
+            name: { type: "string" },
+            accountName: { type: "string" },
+            accountNo: { type: "string" },
+            type: { type: "string", enum: ["BANK", "WALLET"] },
+            status: { type: "string", enum: ["ACTIVE", "INACTIVE"] }
+          }
+        }
       },
       securitySchemes: {
         bearerAuth: {

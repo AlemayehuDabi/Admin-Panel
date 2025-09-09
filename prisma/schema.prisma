@@ -65,6 +65,39 @@ enum NotificationType {
   JOB_ASSIGNED // company assinged to worker
 }
 
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PENDING
+}
+
+enum BankType {
+  BANK
+  WALLET
+}
+
+enum BankStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ReceiptStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // prisma/schema.prisma  (additions only)
 
 model User {
@@ -90,6 +123,10 @@ model User {
   Review         Review[]
   Notification   Notification[]
   PasswordReset  PasswordReset[]
+  Subscription   Subscription[]
+
+  submittedReceipts PaymentReceipt[] @relation("UserSubmittedReceipts")
+  verifiedReceipts  PaymentReceipt[] @relation("ReceiptVerifiedBy")
 
   @@index([referredBy]) // <— NEW
 }
@@ -212,12 +249,52 @@ model Wallet {
 }
 
 model Transaction {
-  id        String          @id @default(uuid())
-  wallet    Wallet          @relation(fields: [walletId], references: [id])
-  walletId  String
-  type      TransactionType
-  amount    Float
-  createdAt DateTime        @default(now())
+  id               String           @id @default(uuid())
+  wallet           Wallet           @relation(fields: [walletId], references: [id])
+  walletId         String
+  type             TransactionType
+  amount           Float
+  createdAt        DateTime         @default(now())
+  // relation to PaymentReceipt (optional)
+  receipt          PaymentReceipt?  @relation("ReceiptTransaction")
+  paymentReceiptId String?
+  PaymentReceipt   PaymentReceipt[]
+}
+
+model Bank {
+  id          String     @id @default(uuid())
+  name        String
+  accountName String
+  accountNo   String
+  type        BankType
+  status      BankStatus @default(ACTIVE)
+
+  receipts  PaymentReceipt[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model PaymentReceipt {
+  id          String        @id @default(uuid())
+  user        User          @relation("UserSubmittedReceipts", fields: [userId], references: [id])
+  userId      String
+  bank        Bank          @relation(fields: [bankId], references: [id])
+  bankId      String
+  plan        Plan?         @relation(fields: [planId], references: [id])
+  planId      String?
+  amount      Float
+  referenceNo String?
+  screenshot  String
+  status      ReceiptStatus @default(PENDING)
+
+  verifiedBy    User?        @relation("ReceiptVerifiedBy", fields: [verifiedById], references: [id])
+  verifiedById  String?
+  transaction   Transaction? @relation("ReceiptTransaction", fields: [transactionId], references: [id])
+  transactionId String?      @unique
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Transaction Transaction[]
 }
 
 model Category {
@@ -291,4 +368,34 @@ model Notification {
   isRead    Boolean          @default(false)
 
   user User @relation(fields: [userId], references: [id])
+}
+
+model Plan {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  price       Int // store in cents (e.g. $10.00 = 1000)
+  interval    PlanInterval // monthly, yearly, etc.
+  features    String[] // list of features (or normalize into another table)
+  status      PlanStatus   @default(ACTIVE)
+
+  subscriptions  Subscription[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PaymentReceipt PaymentReceipt[]
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String
+  planId    String
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime?
+  autoRenew Boolean            @default(true)
+
+  user      User     @relation(fields: [userId], references: [id])
+  plan      Plan     @relation(fields: [planId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
