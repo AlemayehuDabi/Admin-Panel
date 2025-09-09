@@ -102,7 +102,7 @@ export const filterWorkers = async (filters: WorkerFilters) => {
     Role: { select: { id: true, name: true } },
     specialities: { include: { speciality: true } },
     workTypes: { include: { workType: true } },
-    user: { select: { id: true, fullName: true, email: true, location: true } },
+    user: true,
   };
 
   // orderBy: your Worker model doesn't have createdAt, so sort by user.createdAt
