@@ -12,13 +12,6 @@ export const createPlanSchema = z.object({
 
 export const updatePlanSchema = createPlanSchema.partial();
 
-export function validateBody(schema: z.ZodTypeAny) {
-  return (req: Request, res: Response, next: NextFunction) => {
-    const result = schema.safeParse(req.body);
-    if (!result.success) {
-      return res.status(400).json({ error: result.error.format() });
-    }
-    req.body = result.data;
-    return next();
-  };
-}
+export const idSchema = z.object({
+  id: z.uuid(),
+});

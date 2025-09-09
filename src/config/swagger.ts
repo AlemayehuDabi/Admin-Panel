@@ -109,6 +109,41 @@ const options: swaggerJsdoc.Options = {
             status: { type: "string", enum: ["ACTIVE", "INACTIVE"] }
           }
         }
+        ,
+        PaymentReceipt: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            userId: { type: "string" },
+            bankId: { type: "string" },
+            planId: { type: "string", nullable: true },
+            amount: { type: "number", description: "amount in cents" },
+            referenceNo: { type: "string", nullable: true },
+            screenshot: { type: "string" },
+            status: { type: "string", enum: ["PENDING", "APPROVED", "REJECTED"] },
+            verifiedById: { type: "string", nullable: true },
+            transactionId: { type: "string", nullable: true },
+            createdAt: { type: "string", format: "date-time" },
+            updatedAt: { type: "string", format: "date-time" }
+          }
+        },
+        PaymentReceiptCreate: {
+          type: "object",
+          required: ["bankId", "amount", "screenshot"],
+          properties: {
+            bankId: { type: "string", format: "uuid" },
+            planId: { type: "string", format: "uuid" },
+            amount: { type: "integer" },
+            referenceNo: { type: "string" },
+            screenshot: { type: "string" }
+          }
+        },
+        PaymentReceiptAdminReject: {
+          type: "object",
+          properties: {
+            reason: { type: "string" }
+          }
+        }
       },
       securitySchemes: {
         bearerAuth: {

@@ -47,6 +47,7 @@ enum TransactionType {
   WITHDRAWAL
   REFERRAL_REWARD
   ADJUSTMENT
+  SUBSCRIPTION
 }
 
 enum ApplicationStatus {

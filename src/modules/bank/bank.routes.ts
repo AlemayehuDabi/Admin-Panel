@@ -1,7 +1,9 @@
 import { Router } from "express";
 import * as controller from "./bank.controller";
-import { validateBody, createBankSchema, updateBankSchema } from "./bank.validation";
+import {  createBankSchema, idSchema, updateBankSchema } from "./bank.validation";
 import { authorize } from "../../middlewares/authorize";
+import { authenticate } from "../../middlewares/authMiddleware";
+import validate from "../../middlewares/validate";
 
 const router = Router();
 
@@ -14,6 +16,7 @@ const router = Router();
 
 // All bank routes are admin-only
 // router.use(authorize("ADMIN"));
+router.use(authenticate);
 
 /**
  * @openapi
@@ -66,7 +69,7 @@ router.get("/", controller.listBanks);
  *             schema:
  *               $ref: '#/components/schemas/Bank'
  */
-router.post("/", validateBody(createBankSchema), controller.createBank);
+router.post("/", validate(createBankSchema, "body"), controller.createBank);
 
 /**
  * @openapi
@@ -92,7 +95,7 @@ router.post("/", validateBody(createBankSchema), controller.createBank);
  *       404:
  *         description: Bank not found
  */
-router.get("/:id", controller.getBank);
+router.get("/:id", validate(idSchema, "params"), controller.getBank);
 
 /**
  * @openapi
@@ -122,7 +125,7 @@ router.get("/:id", controller.getBank);
  *             schema:
  *               $ref: '#/components/schemas/Bank'
  */
-router.patch("/:id", validateBody(updateBankSchema), controller.updateBank);
+router.patch("/:id", validate(updateBankSchema, "body"), controller.updateBank);
 
 /**
  * @openapi
@@ -142,6 +145,6 @@ router.patch("/:id", validateBody(updateBankSchema), controller.updateBank);
  *       204:
  *         description: Bank deleted
  */
-router.delete("/:id", controller.deleteBank);
+router.delete("/:id",  validate(idSchema, "params"), controller.deleteBank);
 
 export default router;

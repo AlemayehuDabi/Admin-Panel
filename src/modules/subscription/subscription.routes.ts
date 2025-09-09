@@ -1,7 +1,9 @@
 import { Router } from "express";
 import * as controller from "./subscription.controller";
-import { validateBody, createPlanSchema, updatePlanSchema } from "./subscription.validation";
+import { createPlanSchema, updatePlanSchema, idSchema } from "./subscription.validation";
 import { authorize } from "../../middlewares/authorize";
+import { authenticate } from "../../middlewares/authMiddleware";
+import validate from "../../middlewares/validate";
 
 const router = Router();
 
@@ -15,6 +17,7 @@ const router = Router();
 
 // Admin-only CRUD for plans
 // router.use(authorize("ADMIN"));
+router.use(authenticate);
 
 /**
  * @openapi
@@ -67,7 +70,7 @@ router.get("/", controller.listPlans);
  *             schema:
  *               $ref: '#/components/schemas/Plan'
  */
-router.post("/", validateBody(createPlanSchema), controller.createPlan);
+router.post("/", validate(createPlanSchema, "body"), controller.createPlan);
 
 /**
  * @openapi
@@ -93,7 +96,7 @@ router.post("/", validateBody(createPlanSchema), controller.createPlan);
  *       404:
  *         description: Plan not found
  */
-router.get("/:id", controller.getPlan);
+router.get("/:id", validate(idSchema, "params"), controller.getPlan);
 
 /**
  * @openapi
@@ -123,7 +126,7 @@ router.get("/:id", controller.getPlan);
  *             schema:
  *               $ref: '#/components/schemas/Plan'
  */
-router.put("/:id", validateBody(updatePlanSchema), controller.updatePlan);
+router.put("/:id", validate(updatePlanSchema, "body"), controller.updatePlan);
 
 /**
  * @openapi
@@ -143,6 +146,6 @@ router.put("/:id", validateBody(updatePlanSchema), controller.updatePlan);
  *       204:
  *         description: Plan deleted
  */
-router.delete("/:id", controller.removePlan);
+router.delete("/:id", validate(idSchema, "params"), controller.removePlan);
 
 export default router;

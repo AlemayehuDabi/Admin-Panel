@@ -56,7 +56,6 @@ export const login = async (data: any) => {
     where: { id: user.id },
     data: { tokenVersion: 0 },
   });
-
   // User profile
   if (user.role === "WORKER") {
     const worker = await prisma.worker.findUnique({ where: { userId: user.id } });
@@ -78,8 +77,16 @@ export const login = async (data: any) => {
         { expiresIn: "7d" }
       ), user, company
     };
+  } else if (user.role === "ADMIN") {
+    return {
+      token: jwt.sign(
+        { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },
+        ENV.JWT_SECRET,
+        { expiresIn: "7d" }
+      ), user
+    };
   }
-  
+
 };
 
 export const logout = async (userId: string) => {

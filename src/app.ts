@@ -16,6 +16,7 @@ import storage from "./modules/storage/storage.routes";
 import notificationRoutes from "./modules/notification/notification.routes";
 import bankRoutes from "./modules/bank/bank.routes";
 import subscriptionRoutes from "./modules/subscription/subscription.routes";
+import paymentReceiptRoutes from "./modules/paymentReceipt/paymentReceipt.routes";
 
 
 const app = express();
@@ -42,6 +43,7 @@ app.use("/api/storage", storage);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/plans", subscriptionRoutes);
 app.use("/api/banks", bankRoutes);
+app.use("/api/receipts", paymentReceiptRoutes);
 
 // Setup Swagger
 setupSwagger(app);
