@@ -1,7 +1,7 @@
 // src/modules/paymentReceipt/paymentReceipt.routes.ts
 import { Router } from "express";
 import * as controller from "./paymentReceipt.controller";
-import { createReceiptSchema, adminRejectSchema } from "./paymentReceipt.validation";
+import { createReceiptSchema, adminRejectSchema, idSchema } from "./paymentReceipt.validation";
 import { authorize } from "../../middlewares/authorize";
 import { authenticate } from "../../middlewares/authMiddleware";
 import validate from "../../middlewares/validate";
@@ -86,7 +86,7 @@ router.get("/", controller.listUserReceipts);
  *       404:
  *         description: Receipt not found
  */
-router.get("/:id", controller.getUserReceipt);
+router.get("/:id", validate(idSchema, "params"), controller.getUserReceipt);
 
 // Admin routes
 router.use(authorize("ADMIN"))// all routes below require admin
@@ -148,7 +148,7 @@ router.get("/admin/all", controller.adminListReceipts); // /admin/all?status=...
  *       404:
  *         description: Receipt not found
  */
-router.get("/admin/:id", controller.adminGetReceipt);
+router.get("/admin/:id", validate(idSchema, "params"), controller.adminGetReceipt);
 
 /**
  * @openapi
@@ -172,7 +172,7 @@ router.get("/admin/:id", controller.adminGetReceipt);
  *             schema:
  *               $ref: '#/components/schemas/PaymentReceipt'
  */
-router.post("/admin/:id/approve", controller.adminApproveReceipt);
+router.post("/admin/:id/approve",  validate(idSchema, "params"), controller.adminApproveReceipt);
 
 /**
  * @openapi
@@ -202,6 +202,6 @@ router.post("/admin/:id/approve", controller.adminApproveReceipt);
  *             schema:
  *               $ref: '#/components/schemas/PaymentReceipt'
  */
-router.post("/admin/:id/reject", validate(adminRejectSchema,"body"), controller.adminRejectReceipt);
+router.post("/admin/:id/reject", validate(idSchema, "params"), validate(adminRejectSchema,"body"), controller.adminRejectReceipt);
 
 export default router;
