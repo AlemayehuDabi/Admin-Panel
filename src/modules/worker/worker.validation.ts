@@ -18,6 +18,49 @@ const availabilitySchema = z.object({
     .optional(),
 }).optional();
 
+export const skillsMatchEnum = z.enum(["any", "all"]);
+export const sortByEnum = z.enum(["createdAt", "experience", "relevance"]);
+export const sortOrderEnum = z.enum(["asc", "desc"]);
+
+export const getWorkersQuerySchema = z.object({
+  q: z.string().optional(),
+
+  categoryId: z.uuid().optional(),
+  roleId: z.uuid().optional(),
+  specialtyId: z.uuid().optional(),
+  workTypeId: z.uuid().optional(),
+
+  // requiredSkills: comma-separated string -> transformed to string[]
+  requiredSkills: z
+    .string()
+    .transform((s) => s.split(",").map((x) => x.trim()).filter(Boolean))
+    .optional(),
+
+  skillsMatch: skillsMatchEnum.optional().default("any"),
+
+  hasPhoto: z
+    .string()
+    .transform((v) => v === "true")
+    .optional(),
+
+  page: z
+    .string()
+    .regex(/^\d+$/)
+    .transform((v) => Math.max(1, Number(v)))
+    .optional()
+    .default(1),
+
+  limit: z
+    .string()
+    .regex(/^\d+$/)
+    .transform((v) => Math.max(1, Math.min(100, Number(v))))
+    .optional()
+    .default(20),
+
+  sortBy: sortByEnum.optional().default("createdAt"),
+  sortOrder: sortOrderEnum.optional().default("desc"),
+});
+
 export const userIdSchema = z.object({
   id: z.uuid("Invalid User Id or Not Found")
 });
@@ -164,3 +207,4 @@ export type WorkerRegistrationInput = z.infer<typeof workerRegistrationSchema>;
 export type workerDetailsInput = z.infer<typeof workerDetailsSchema>;
 export type WorkerDetailsInput = z.infer<typeof workerDetailsSchema>;
 export type WorkerUpdateInput = z.infer<typeof workerUpdateSchema>;
+export type GetWorkersQuery = z.infer<typeof getWorkersQuerySchema>;

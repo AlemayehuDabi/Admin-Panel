@@ -3,19 +3,21 @@ import { VerificationStatus, UserStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { NotificationService } from "../notification/notification.service";
 
-// Get all workers (optionally filter by verification or status)
-interface WorkerFilter {
+type WorkerFilters = {
+  q?: string;
   categoryId?: string;
   roleId?: string;
   specialtyId?: string;
   workTypeId?: string;
-  title?: string;
-  jobLocation?: string;
-  payRate?: number;
-  jobType?: string;
-  startDate?: Date;
   requiredSkills?: string[];
-}
+  skillsMatch?: "any" | "all";
+  hasPhoto?: boolean;
+  page?: number;
+  limit?: number;
+  sortBy?: "createdAt" | "experience" | "relevance";
+  sortOrder?: "asc" | "desc";
+};
+
 
 type UpdateWorkerData = {
   fullName?: string;
@@ -24,7 +26,7 @@ type UpdateWorkerData = {
   password?: string;
   role?: string;
   location?: string | null;
-
+  
   // Worker fields
   categoryId?: string | null;
   roleId?: string | null; // Role relation id in Worker
@@ -36,43 +38,115 @@ type UpdateWorkerData = {
   experience?: string | null;
   profilePhoto?: string | null;
   badges?: string[] | null;
-
+  
   // relations (many-to-many through join tables)
   specialityIds?: string[] | null; // if provided -> replace
   workTypeIds?: string[] | null;   // if provided -> replace
 };
 
-export const filterWorkers = async (filters: WorkerFilter) => {
-  return prisma.worker.findMany({
-    where: {
-      ...(filters.categoryId && { categoryId: filters.categoryId }),
-      ...(filters.roleId && { roleId: filters.roleId }),
-      ...(filters.specialtyId && {
-        specialties: { some: { specialtyId: filters.specialtyId } },
-      }),
-      ...(filters.workTypeId && {
-        workTypes: { some: { workTypeId: filters.workTypeId } },
-      }),
-      ...(filters.title && { title: { contains: filters.title, mode: "insensitive" } }),
-      ...(filters.jobLocation && {
-        jobLocation: { contains: filters.jobLocation, mode: "insensitive" },
-      }),
-      ...(filters.payRate && { payRate: { gte: filters.payRate } }),
-      ...(filters.jobType && { jobType: filters.jobType }),
-      ...(filters.startDate && { startDate: { gte: filters.startDate } }),
-      ...(filters.requiredSkills && filters.requiredSkills.length > 0 && {
-        requiredSkills: {
-          hasSome: filters.requiredSkills, // assuming it's a string[] column
-        },
-      }),
-    },
-    include: {
-      category: true,
-      Role: true,
-      specialities: { include: { speciality: true } },
-      workTypes: { include: { workType: true } },
-    },
+// Get all workers (optionally filter by verification or status)
+export const filterWorkers = async (filters: WorkerFilters) => {
+  const page = filters.page ?? 1;
+  const limit = filters.limit ?? 20;
+  const skip = (page - 1) * limit;
+
+  // Build Prisma where
+  const where: any = {};
+
+  if (filters.categoryId) where.categoryId = filters.categoryId;
+  if (filters.roleId) where.roleId = filters.roleId;
+
+  if (filters.specialtyId) {
+    where.specialities = { some: { specialityId: filters.specialtyId } };
+  }
+
+  if (filters.workTypeId) {
+    where.workTypes = { some: { workTypeId: filters.workTypeId } };
+  }
+
+  // skills (string[] on Worker)
+  if (filters.requiredSkills && filters.requiredSkills.length > 0) {
+    if (filters.skillsMatch === "all") {
+      where.skills = { hasEvery: filters.requiredSkills };
+    } else {
+      where.skills = { hasSome: filters.requiredSkills };
+    }
+  }
+
+  // text search q: across user.fullName, category.name, Role.name, and skills array
+  if (filters.q) {
+    const q = filters.q;
+    where.OR = [
+      { user: { fullName: { contains: q, mode: "insensitive" } } },
+      { category: { name: { contains: q, mode: "insensitive" } } },
+      { Role: { name: { contains: q, mode: "insensitive" } } },
+      // skills is an array of strings; `hasSome` with token may match exact token; for partial matches you
+      // would need full text or trigram indexes. This is a simple inclusion attempt:
+      { skills: { hasSome: [q] } },
+    ];
+  }
+
+  // select minimal useful payload (matches your schema)
+  const select = {
+    id: true,
+    userId: true,
+    professionalRole: true,
+    profilePhoto: true,
+    skills: true,
+    experience: true,
+    nationalIdUrl: true,
+    portfolio: true,
+    availability: true,
+    badges: true,
+    _count: { select: { applications: true, reviews: true } },
+    category: { select: { id: true, name: true } },
+    Role: { select: { id: true, name: true } },
+    specialities: { include: { speciality: true } },
+    workTypes: { include: { workType: true } },
+    user: { select: { id: true, fullName: true, email: true, location: true } },
+  };
+
+  // orderBy: your Worker model doesn't have createdAt, so sort by user.createdAt
+  let orderBy: any = undefined;
+  if (filters.sortBy === "experience") {
+    // experience is a string in your schema; if you later convert to a numeric field use numeric ordering
+    orderBy = { user: { createdAt: filters.sortOrder } }; // fallback
+  } else if (filters.sortBy === "createdAt" || filters.sortBy === "relevance") {
+    orderBy = { user: { createdAt: filters.sortOrder } };
+  } else {
+    orderBy = { user: { createdAt: filters.sortOrder } };
+  }
+
+  // run query
+  const workers = await prisma.worker.findMany({
+    where,
+    select,
+    orderBy,
+    skip,
+    take: limit,
   });
+
+  // post-filtering: hasPhoto check (profilePhoto)
+  const filtered = workers.filter((w) => {
+    if (typeof filters.hasPhoto === "boolean") {
+      const hasPhoto = !!(w.profilePhoto && w.profilePhoto.trim().length > 0);
+      if (filters.hasPhoto !== hasPhoto) return false;
+    }
+    return true;
+  });
+
+  // total count using same where (note: if you need exact total after post-filtering, you'd compute differently)
+  const total = await prisma.worker.count({ where });
+
+  return {
+    items: filtered,
+    meta: {
+      total,
+      page,
+      limit,
+      returned: filtered.length,
+    },
+  };
 };
 
 // Get worker details by ID

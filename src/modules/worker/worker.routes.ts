@@ -262,73 +262,125 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  * @openapi
  * /workers:
  *   get:
+ *     summary: Get list of workers with filters
+ *     description: >
+ *       Returns a list of workers with optional filters such as category, role,
+ *       speciality, work type, required skills, photo availability, pagination, and sorting.
  *     tags:
  *       - Worker
- *     summary: Get all workers (admin)
- *     description: Returns workers filtered by supplied query params. This endpoint requires authentication.
  *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         description: Free-text search (matches user name, category, role, or skills).
  *       - in: query
  *         name: categoryId
  *         schema:
  *           type: string
- *         description: Filter by worker category id (uuid)
+ *           format: uuid
+ *         description: Filter by category UUID.
  *       - in: query
  *         name: roleId
  *         schema:
  *           type: string
- *         description: Filter by professional role id (uuid)
+ *           format: uuid
+ *         description: Filter by role UUID.
  *       - in: query
  *         name: specialtyId
  *         schema:
  *           type: string
- *         description: Filter by worker specialty id (uuid)
+ *           format: uuid
+ *         description: Filter by speciality UUID.
  *       - in: query
  *         name: workTypeId
  *         schema:
  *           type: string
- *         description: Filter by preferred work type id (uuid)
- *       - in: query
- *         name: title
- *         schema:
- *           type: string
- *         description: Filter by job title
- *       - in: query
- *         name: jobLocation
- *         schema:
- *           type: string
- *         description: Filter by job location
- *       - in: query
- *         name: payRate
- *         schema:
- *           type: number
- *         description: Filter by pay rate (minimum)
- *       - in: query
- *         name: jobType
- *         schema:
- *           type: string
- *         description: Filter by job type (e.g. Full-time, Part-time, Contract)
- *       - in: query
- *         name: startDate
- *         schema:
- *           type: string
- *           format: date
- *         description: Filter by job start date
+ *           format: uuid
+ *         description: Filter by work type UUID.
  *       - in: query
  *         name: requiredSkills
  *         schema:
- *           type: array
- *           items:
- *             type: string
- *         style: form
- *         explode: true
- *         description: Filter by required skills (multiple values allowed)
- *     security:
- *       - bearerAuth: []
+ *           type: string
+ *           example: react,node
+ *         description: Comma-separated list of required skills. Use with `skillsMatch`.
+ *       - in: query
+ *         name: skillsMatch
+ *         schema:
+ *           type: string
+ *           enum: [any, all]
+ *           default: any
+ *         description: >
+ *           - `any`: match workers with at least one of the required skills  
+ *           - `all`: match workers with all the required skills
+ *       - in: query
+ *         name: hasPhoto
+ *         schema:
+ *           type: boolean
+ *         description: Filter by whether worker has a profile photo.
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *           minimum: 1
+ *         description: Page number (pagination).
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Number of records per page.
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, experience, relevance]
+ *           default: createdAt
+ *         description: Sort workers by a specific field.
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Sort order.
  *     responses:
  *       200:
  *         description: List of workers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Worker'
+ *                     meta:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         returned:
+ *                           type: integer
+ *       400:
+ *         description: Invalid query parameters
+ *       500:
+ *         description: Internal server error
  */
-router.get("/", authenticate,  workerController.getWorkers);
+router.get("/", authenticate, workerController.getWorkers);
 
 /**
  * @openapi

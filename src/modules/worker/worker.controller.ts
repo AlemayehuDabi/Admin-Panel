@@ -1,40 +1,37 @@
 import { NextFunction, Request, Response } from "express";
 import * as workerService from "./worker.service";
 import { successResponse, errorResponse } from "../../utils/response";
+import { getWorkersQuerySchema } from "./worker.validation";
 
 // GET all workers (with optional filters)
 export const getWorkers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const {
-      categoryId,
-      roleId,
-      specialtyId,
-      workTypeId,
-      title,
-      jobLocation,
-      payRate,
-      jobType,
-      startDate,
-      requiredSkills,
-    } = req.query;
+    const parsed = getWorkersQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({ success: false, message: "Invalid query params", errors: parsed.error.flatten() });
+    }
 
-    const workers = await workerService.filterWorkers({
-      categoryId: categoryId as string,
-      roleId: roleId as string,
-      specialtyId: specialtyId as string,
-      workTypeId: workTypeId as string,
-      title: title as string,
-      jobLocation: jobLocation as string,
-      payRate: payRate ? Number(payRate) : undefined,
-      jobType: jobType as string,
-      startDate: startDate ? new Date(startDate as string) : undefined,
-      requiredSkills: requiredSkills
-        ? (requiredSkills as string).split(",")
-        : undefined,
-    });
+    const raw = parsed.data;
 
-    res.json(successResponse(workers));
-  } catch (err: any) {
+    const filters = {
+      q: raw.q,
+      categoryId: raw.categoryId,
+      roleId: raw.roleId,
+      specialtyId: raw.specialtyId,
+      workTypeId: raw.workTypeId,
+      requiredSkills: raw.requiredSkills as string[] | undefined,
+      skillsMatch: raw.skillsMatch as "any" | "all",
+      hasPhoto: raw.hasPhoto as boolean | undefined,
+      page: raw.page as number,
+      limit: raw.limit as number,
+      sortBy: raw.sortBy as "createdAt" | "experience" | "relevance",
+      sortOrder: raw.sortOrder as "asc" | "desc",
+    };
+
+    const result = await workerService.filterWorkers(filters);
+
+    return res.json(successResponse(result));
+  } catch (err) {
     next(err);
   }
 };

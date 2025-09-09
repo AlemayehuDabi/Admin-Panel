@@ -10,11 +10,57 @@ import { z } from 'zod';
 
 export const userStatusEnum = z.enum(["ACTIVE", "INACTIVE", "PENDING", "REJECTED"]);
 export const verificationStatusEnum = z.enum(["PENDING", "APPROVED", "REJECTED"]);
+export const sortByEnum = z.enum(["createdAt", "jobsCount", "name"]);
+export const sortOrderEnum = z.enum(["asc", "desc"]);
 
-// Query params for GET /company - optional filters
+// Query params for GET /companies
 export const getAllCompaniesSchema = z.object({
-    status: userStatusEnum.optional(),
-    verification: verificationStatusEnum.optional(),
+  q: z.string().optional(), // search across name/email
+  status: userStatusEnum.optional(),
+  verification: verificationStatusEnum.optional(),
+  location: z.string().optional(),
+
+  hasLogo: z
+    .string()
+    .transform((val) => val === "true")
+    .optional(),
+
+  hasVerificationDocs: z
+    .string()
+    .transform((val) => val === "true")
+    .optional(),
+
+  minJobs: z
+    .string()
+    .regex(/^\d+$/, "Must be a number")
+    .transform((val) => parseInt(val, 10))
+    .optional(),
+
+  maxJobs: z
+    .string()
+    .regex(/^\d+$/, "Must be a number")
+    .transform((val) => parseInt(val, 10))
+    .optional(),
+
+  jobStatus: z.string().optional(),
+  jobCategory: z.string().optional(),
+
+  page: z
+    .string()
+    .regex(/^\d+$/)
+    .transform((val) => Math.max(1, parseInt(val, 10)))
+    .optional()
+    .default(1),
+
+  limit: z
+    .string()
+    .regex(/^\d+$/)
+    .transform((val) => Math.max(1, Math.min(100, parseInt(val, 10))))
+    .optional()
+    .default(20),
+
+  sortBy: sortByEnum.optional().default("createdAt"),
+  sortOrder: sortOrderEnum.optional().default("desc"),
 });
 
 // Route params containing company id (UUID)
@@ -72,3 +118,4 @@ export const createCompanySchema = z.object({
 export type GetAllCompaniesInput = z.infer<typeof getAllCompaniesSchema>;
 export type CompanyParams = z.infer<typeof companyParamsSchema>;
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;
+export type GetAllCompaniesQuery = z.infer<typeof getAllCompaniesSchema>;
