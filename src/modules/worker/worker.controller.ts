@@ -100,27 +100,6 @@ export const createWorkTypeController = async (req: Request, res: Response, next
   }
 }
 
-
-// PATCH approve worker
-export const approveWorker = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const worker = await workerService.approveWorker(req.params.id);
-    res.json(successResponse(worker));
-  } catch (err: any) {
-    next(err);
-  }
-};
-
-// PATCH reject worker
-export const rejectWorker = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const worker = await workerService.rejectWorker(req.params.id);
-    res.json(successResponse(worker));
-  } catch (err: any) {
-    next(err);
-  }
-};
-
 export const updateWorker = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const worker = await workerService.workerUpdate(req.params.id, req.body);

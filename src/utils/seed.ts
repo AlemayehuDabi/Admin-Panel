@@ -393,7 +393,7 @@ async function runAllSeedsWithDelay() {
   await prisma.$disconnect();
 }
 
-runAllSeedsWithDelay()
+workerJobApplicationSeed()
   .then(() => {
     console.log("✅ All seeds executed successfully");
   })

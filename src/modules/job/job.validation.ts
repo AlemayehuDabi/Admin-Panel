@@ -51,3 +51,32 @@ export const assignWorkerParamsSchema = z.object({
   jobId: z.uuid(),
   workerId: z.uuid()
 });
+
+export const listApplicationsSchema = z.object({
+  search: z.string().trim().optional(),
+
+  // allow comma-separated or multiple params, normalize later
+  skills: z.union([z.string(), z.array(z.string())]).optional(),
+
+  jobLocation: z.string().trim().optional(),
+  jobType: z.string().trim().optional(),
+  jobStatus: z.string().trim().optional(),
+
+  applicationStatus: z.string().trim().optional(),
+  adminApproved: z.string().trim().optional(),
+  acceptedAssignment: z.string().trim().optional(),
+
+  appliedFrom: z.string().datetime().optional(),
+  appliedTo: z.string().datetime().optional(),
+
+  payRateMin: z.preprocess((v) => (v !== undefined ? Number(v) : undefined), z.number().nonnegative().optional()),
+  payRateMax: z.preprocess((v) => (v !== undefined ? Number(v) : undefined), z.number().nonnegative().optional()),
+
+  sortBy: z.enum(["appliedAt", "payRate", "startDate", "createdAt"]).optional(),
+  sortOrder: z.enum(["asc", "desc"]).optional(),
+
+  page: z.preprocess((v) => (v !== undefined ? Number(v) : undefined), z.number().int().min(1).optional()),
+  limit: z.preprocess((v) => (v !== undefined ? Number(v) : undefined), z.number().int().min(1).max(100).optional()),
+});
+
+export type ListApplicationsQuery = z.infer<typeof listApplicationsSchema>;

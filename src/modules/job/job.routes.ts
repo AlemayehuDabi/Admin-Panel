@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
 import validate from "../../middlewares/validate";
-import { applicationIdParamSchema, assignWorkerParamsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, updateJobSchema } from "./job.validation";
+import { applicationIdParamSchema, assignWorkerParamsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema } from "./job.validation";
 import { authorize } from "../../middlewares/authorize";
 
 const router = Router();
@@ -311,6 +311,98 @@ router.patch("/applications/:applicationId/reject", validate(applicationIdParamS
  */
 router.post("/:jobId/assign/:workerId", validate(assignWorkerParamsSchema, "params"), authenticate, jobController.assignWorkerToJob);
 
+/**
+ * @openapi
+ * /api/jobs/applications:
+ *   get:
+ *     summary: List worker job applications with powerful search & filter
+ *     tags:
+ *       - Job
+ *     description: |
+ *       Returns paginated worker job applications with search, filters and pagination.
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search across job title, description and company name.
+ *       - in: query
+ *         name: skills
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of required skills.
+ *       - in: query
+ *         name: jobLocation
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: jobType
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: jobStatus
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: applicationStatus
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: adminApproved
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: acceptedAssignment
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: appliedFrom
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: appliedTo
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: payRateMin
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: payRateMax
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [appliedAt, payRate, startDate, createdAt]
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ *       '400':
+ *         description: Validation error
+ *       '500':
+ *         description: Internal server error
+ */
+router.get("/applications", validate(listApplicationsSchema, "query"), authenticate, jobController.getApplicationsByJob);
 
 /**
  * /jobs/admin/{applicationId}/approve:

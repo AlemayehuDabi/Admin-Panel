@@ -5,6 +5,27 @@ import { NotificationRuleService } from "../notification/notificationRuleService
 import { sendEmail } from "../../utils/mailer";
 import { newJobEmail } from "../../utils/emailTemplates/newJob";
 
+export type GetApplicationsOptions = {
+  q?: string;
+  skills?: string[]; // matches any skill (hasSome)
+  jobLocation?: string;
+  jobType?: string;
+  jobStatus?: string; // JobStatus
+  applicationStatus?: string; // ApplicationStatus (status)
+  adminApproved?: string; // ApplicationStatus
+  acceptedAssignment?: string; // ApplicationStatus
+  appliedFrom?: string; // ISO date
+  appliedTo?: string; // ISO date
+  payRateMin?: number;
+  payRateMax?: number;
+  sortBy?: "appliedAt" | "payRate" | "startDate" | "createdAt";
+  sortOrder?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+};
+
+
+
 // Create a new job
 export const createJob = async (data: {
   title: string;
@@ -215,3 +236,123 @@ export const adminContractRejection = async (applicationId: string) => {
     }
   })
 }
+
+export const getApplicationsByJob = async (jobId: string) => {
+  return prisma.workerJobApplication.findMany({
+    where: { jobId },
+    include: { worker: { include: { user: true } } },
+  });
+}
+
+export const getAllApplications = async (opts: GetApplicationsOptions = {}) => {
+  const {
+    q,
+    skills,
+    jobLocation,
+    jobType,
+    jobStatus,
+    applicationStatus,
+    adminApproved,
+    acceptedAssignment,
+    appliedFrom,
+    appliedTo,
+    payRateMin,
+    payRateMax,
+    sortBy = "appliedAt",
+    sortOrder = "desc",
+    page = 1,
+    limit = 20,
+  } = opts;
+
+  const where: any = {};
+
+  // Filter application-level statuses
+  if (applicationStatus) where.status = applicationStatus;
+  if (adminApproved) where.adminApproved = adminApproved;
+  if (acceptedAssignment) where.acceptedAssignment = acceptedAssignment;
+
+  // Date range filter on appliedAt
+  if (appliedFrom || appliedTo) {
+    where.appliedAt = {};
+    if (appliedFrom) where.appliedAt.gte = new Date(appliedFrom);
+    if (appliedTo) where.appliedAt.lte = new Date(appliedTo);
+  }
+
+  // Build nested job filters
+  const jobWhere: any = {};
+  if (jobLocation) jobWhere.jobLocation = { contains: jobLocation, mode: "insensitive" };
+  if (jobType) jobWhere.jobType = jobType;
+  if (jobStatus) jobWhere.status = jobStatus;
+  if (typeof payRateMin === "number" || typeof payRateMax === "number") {
+    jobWhere.payRate = {};
+    if (typeof payRateMin === "number") jobWhere.payRate.gte = payRateMin;
+    if (typeof payRateMax === "number") jobWhere.payRate.lte = payRateMax;
+  }
+  if (skills && skills.length > 0) {
+    // job.requiredSkills is String[] -> hasSome checks any of provided skills
+    jobWhere.requiredSkills = { hasSome: skills };
+  }
+
+  // Search across job.title, job.description, company.name
+  if (q) {
+    const s = q.trim();
+    // OR across nested fields
+    where.OR = [
+      { job: { title: { contains: s, mode: "insensitive" } } },
+      { job: { description: { contains: s, mode: "insensitive" } } },
+      // company through job relation: job.company.name
+      { job: { company: { name: { contains: s, mode: "insensitive" } } } },
+    ];
+  }
+
+  // If jobWhere has keys, attach it
+  if (Object.keys(jobWhere).length > 0) {
+    // merge into where.job using AND semantics
+    where.job = { ...where.job, ...jobWhere };
+  }
+
+  // Sorting mapping
+  const orderBy: any[] = [];
+  if (sortBy === "payRate") {
+    orderBy.push({ job: { payRate: sortOrder } });
+  } else if (sortBy === "startDate") {
+    orderBy.push({ job: { startDate: sortOrder } });
+  } else if (sortBy === "createdAt") {
+    orderBy.push({ job: { createdAt: sortOrder } });
+  } else {
+    // fallback to appliedAt
+    orderBy.push({ appliedAt: sortOrder });
+  }
+
+  const take = Math.min(100, Math.max(1, limit || 20));
+  const skip = (Math.max(1, page || 1) - 1) * take;
+
+  // total count for pagination
+  const total = await prisma.workerJobApplication.count({ where });
+
+  // fetch data (include job and job.company for convenience)
+  const data = await prisma.workerJobApplication.findMany({
+    where,
+    include: {
+      job: {
+        include: {
+          company: true,
+        },
+      },
+      worker: true,
+    },
+    orderBy,
+    skip,
+    take,
+  });
+
+  return {
+    data,
+    meta: {
+      total,
+      page: Math.max(1, page || 1),
+      limit: take,
+      totalPages: Math.ceil(total / take) || 1,
+    },
+  };
+};

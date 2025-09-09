@@ -7,6 +7,7 @@ import { ENV } from "../../config/env";
 import { UserStatus, VerificationStatus } from "@prisma/client";
 import { sendResetEmail } from "../../utils/mailer";
 import { el } from "@faker-js/faker/.";
+import { NotificationService } from "../notification/notification.service";
 
 
 function generateCode(): string {
@@ -99,12 +100,18 @@ export const logout = async (userId: string) => {
 };
 
 export const activateUser = async (userId: string) => {
-  return prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: {
       status: UserStatus.ACTIVE,
     },
   });
+  await NotificationService.notifyUser(
+    userId,
+    "Your application has been approved",
+    `Congratulations ${user.fullName}, your account has been approved.`,
+    "JOB_RESPONSE"
+  );
 }
 
 export const deactivateUser = async (userId: string) => {

@@ -38,6 +38,39 @@ const options: swaggerJsdoc.Options = {
           },
         }
         ,
+        Company: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            name: { type: "string" },
+          },
+        },
+        Job: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            title: { type: "string" },
+            payRate: { type: "number" },
+            jobLocation: { type: "string" },
+          },
+        },
+        Worker: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            fullName: { type: "string" },
+          },
+        },
+        WorkerJobApplication: {
+          type: "object",
+          properties: {
+            id: { type: "string", format: "uuid" },
+            workerId: { type: "string", format: "uuid" },
+            jobId: { type: "string", format: "uuid" },
+            status: { type: "string" },
+            appliedAt: { type: "string", format: "date-time" },
+          },
+        },
         Plan: {
           type: "object",
           properties: {

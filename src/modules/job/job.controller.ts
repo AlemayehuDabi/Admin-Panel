@@ -101,3 +101,68 @@ export const rejectWorkContract = async (req: Request, res: Response, next: Next
     next(err);
   }
 };
+
+export const getApplicationsByJob = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const applications = jobService.getApplicationsByJob(req.params.jobId);
+    return applications;
+  } catch (err) {
+    next(err)
+  }
+}
+
+export const listApplications = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // parse query params
+    const {
+      search,
+      skills,
+      jobLocation,
+      jobType,
+      jobStatus,
+      applicationStatus,
+      adminApproved,
+      acceptedAssignment,
+      appliedFrom,
+      appliedTo,
+      payRateMin,
+      payRateMax,
+      sortBy,
+      sortOrder,
+      page,
+      limit,
+    } = req.query;
+
+    // normalize skills: allow comma-separated or multiple `skills` params
+    let skillsArr: string[] | undefined;
+    if (typeof skills === "string") {
+      skillsArr = skills.split(",").map(s => s.trim()).filter(Boolean);
+    } else if (Array.isArray(skills)) {
+      skillsArr = skills.map(s => String(s).trim()).flatMap(s => s.split(",")).map(s => s.trim()).filter(Boolean);
+    }
+
+    const opts = {
+      q: typeof search === "string" ? search : undefined,
+      skills: skillsArr,
+      jobLocation: typeof jobLocation === "string" ? jobLocation : undefined,
+      jobType: typeof jobType === "string" ? jobType : undefined,
+      jobStatus: typeof jobStatus === "string" ? jobStatus : undefined,
+      applicationStatus: typeof applicationStatus === "string" ? applicationStatus : undefined,
+      adminApproved: typeof adminApproved === "string" ? adminApproved : undefined,
+      acceptedAssignment: typeof acceptedAssignment === "string" ? acceptedAssignment : undefined,
+      appliedFrom: typeof appliedFrom === "string" ? appliedFrom : undefined,
+      appliedTo: typeof appliedTo === "string" ? appliedTo : undefined,
+      payRateMin: payRateMin ? Number(payRateMin) : undefined,
+      payRateMax: payRateMax ? Number(payRateMax) : undefined,
+      sortBy: typeof sortBy === "string" ? (sortBy as any) : undefined,
+      sortOrder: sortOrder === "asc" || sortOrder === "desc" ? sortOrder as "asc" | "desc" : undefined,
+      page: page ? Number(page) : undefined,
+      limit: limit ? Number(limit) : undefined,
+    };
+
+    const result = await jobService.getAllApplications(opts);
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};

@@ -410,58 +410,6 @@ router.get("/:id", validate(userIdSchema, "params"), authenticate, workerControl
 
 /**
  * @openapi
- * /workers/{id}/approve:
- *   patch:
- *     tags:
- *       - Worker
- *     summary: Approve a worker (admin)
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Worker ID to approve
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Worker approved and user verification set to APPROVED
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Worker not found
- */
-router.patch("/:id/approve", validate(userIdSchema, "params"), authenticate, workerController.approveWorker);
-
-/**
- * @openapi
- * /workers/{id}/reject:
- *   patch:
- *     tags:
- *       - Worker
- *     summary: Reject a worker (admin)
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Worker ID to reject
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Worker rejected and user verification set to REJECTED
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Worker not found
- */
-router.patch("/:id/reject", validate(userIdSchema, "params"), authenticate, workerController.rejectWorker);
-
-/**
- * @openapi
  * /workers/{id}/details:
  *   patch:
  *     tags:
@@ -720,7 +668,7 @@ router.get("/:workerId/applications", validate(applicationsSchema, "params"), au
 
 /**
  * @openapi
- * /workers/{workerId}/applications/{applicationId}/accept:
+ * /workers/{workerId}/assignment/{applicationId}/accept:
  *   patch:
  *     tags:
  *       - Worker
@@ -747,11 +695,11 @@ router.get("/:workerId/applications", validate(applicationsSchema, "params"), au
  *       404:
  *         description: Worker or application not found
  */
-router.patch("/:workerId/applications/:applicationId/accept", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.acceptJobAssignment);
+router.patch("/:workerId/assignment/:applicationId/accept", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.acceptJobAssignment);
 
 /**
  * @openapi
- * /workers/{workerId}/applications/{applicationId}/reject:
+ * /workers/{workerId}/assignment/{applicationId}/reject:
  *   patch:
  *     tags:
  *       - Worker
@@ -778,6 +726,6 @@ router.patch("/:workerId/applications/:applicationId/accept", validate(workerIdS
  *       404:
  *         description: Worker or application not found
  */
-router.patch("/:workerId/applications/:applicationId/reject", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.rejectJobAssignment);
+router.patch("/:workerId/assignment/:applicationId/reject", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.rejectJobAssignment);
 
 export default router;

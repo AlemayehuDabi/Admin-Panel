@@ -1,5 +1,4 @@
 import prisma from "../../config/prisma";
-import { VerificationStatus, UserStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { NotificationService } from "../notification/notification.service";
 
@@ -335,36 +334,6 @@ export const workerUpdate = async (workerUserId: string, data: UpdateWorkerData)
   });
 
   return result;
-};
-
-// Approve a worker (set verification to APPROVED)
-export const approveWorker = async (userId: string) => {
-  const worker = await prisma.user.findUnique({ where: { id: userId } });
-
-  if (!worker) throw new Error("Worker not found");
-
-  await NotificationService.notifyUser(
-    userId,
-    "Your application has been approved",
-    `Congratulations ${worker.fullName}, your application has been approved.`,
-    "JOB_RESPONSE"
-  );
-
-  return prisma.user.update({
-    where: { id: userId },
-    data: { verification: VerificationStatus.APPROVED, status: UserStatus.ACTIVE },
-  });
-};
-
-// Reject a worker (set verification to REJECTED)
-export const rejectWorker = async (workerId: string) => {
-  const worker = await prisma.worker.findUnique({ where: { id: workerId } });
-  if (!worker) throw new Error("Worker not found");
-
-  return prisma.user.update({
-    where: { id: worker.userId },
-    data: { verification: VerificationStatus.REJECTED, status: UserStatus.REJECTED },
-  });
 };
 
 // Approve/reject a specific license
