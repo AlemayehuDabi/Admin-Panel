@@ -16,7 +16,7 @@ export const createBank = async (data: CreateBankDto) =>{
 }
 
 export const listBanks = async (take = 50, skip = 0) =>
-  prisma.bank.findMany({ take, skip, orderBy: { createdAt: "desc" } });
+  prisma.bank.findMany({ take, skip, orderBy: { createdAt: "desc" }, where: { status: "ACTIVE" } });
 
 export const getBank = async (id: string) =>
   prisma.bank.findUnique({ where: { id } });
