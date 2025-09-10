@@ -123,10 +123,10 @@ export const getAllCompanies = async (filters: CompanyFilters = {}) => {
 
 // Get company details by ID
 export const getCompanyById = async (companyId: string) => {
-  return prisma.user.findUnique({
+  return prisma.company.findUnique({
     where: { id: companyId },
     include: {
-      companyProfile: true,
+      user: true,
     },
   });
 };
@@ -199,16 +199,15 @@ export const rejectCompany = async (companyId: string) => {
 
 // Update company detail
 export const updateDetail = async (companyId: string, data: Partial<Company>) => {
-  const user = await prisma.user.findUnique({ where: { id: companyId } });
-  if (!user) throw new Error("Company not found");
-  if (user.role !== "COMPANY") throw new Error("User is not a company");
-  return prisma.company.upsert({
-    where: { userId: companyId },  // ✅ match on unique userId
-    create: {
-      userId: companyId,
+  const company = await prisma.company.findUnique({ where: { id: companyId }, include: { user: true } });
+  if (!company) throw new Error("Company not found");
+  if (company.user.role !== "COMPANY") throw new Error("User is not a company");
+  return prisma.company.update({
+    where: { id: companyId },
+    data: {
       ...data,
     },
-    update: data,
+    include: { user: true },
   });
 };
 

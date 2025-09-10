@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import { NotificationService } from "../notification/notification.service";
 
 type WorkerFilters = {
+  status: ("ACTIVE"| "INACTIVE" | "PENDING" | "REJECTED");
+  verification: ("PENDING" | "APPROVED" | "REJECTED");
   q?: string;
   categoryId?: string;
   roleId?: string;
@@ -52,6 +54,9 @@ export const filterWorkers = async (filters: WorkerFilters) => {
   // Build Prisma where
   const where: any = {};
 
+  if (filters.verification) where.verification = filters.verification;
+  if (filters.status) where.status = filters.status;
+
   if (filters.categoryId) where.categoryId = filters.categoryId;
   if (filters.roleId) where.roleId = filters.roleId;
 
@@ -89,6 +94,8 @@ export const filterWorkers = async (filters: WorkerFilters) => {
   const select = {
     id: true,
     userId: true,
+    status: true,
+    verification: true,
     professionalRole: true,
     profilePhoto: true,
     skills: true,

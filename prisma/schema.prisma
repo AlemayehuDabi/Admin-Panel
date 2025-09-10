@@ -109,7 +109,7 @@ model User {
   passwordHash String
   location     String?
   role         UserRole
-  status       UserStatus         @default(PENDING)
+  status       UserStatus         @default(ACTIVE)
   verification VerificationStatus @default(PENDING)
   referralCode String?            @unique
   referredBy   String?
@@ -130,6 +130,8 @@ model User {
   verifiedReceipts  PaymentReceipt[] @relation("ReceiptVerifiedBy")
 
   @@index([referredBy]) // <— NEW
+  @@index([status, verification]) // compound filter
+  @@index([createdAt])
 }
 
 model Worker {
@@ -156,6 +158,10 @@ model Worker {
   applications WorkerJobApplication[]
   Role         Role?                  @relation(fields: [roleId], references: [id])
   roleId       String?
+
+  // index
+  @@index([categoryId])
+  @@index([roleId])
 }
 
 model PasswordReset {

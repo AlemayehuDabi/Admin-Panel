@@ -15,6 +15,8 @@ export const getWorkers = async (req: Request, res: Response, next: NextFunction
 
     const filters = {
       q: raw.q,
+      status: raw.status as "ACTIVE"| "INACTIVE" | "PENDING" | "REJECTED",
+      verification: raw.verification as "PENDING" | "APPROVED" | "REJECTED",
       categoryId: raw.categoryId,
       roleId: raw.roleId,
       specialtyId: raw.specialtyId,

@@ -24,7 +24,8 @@ export const sortOrderEnum = z.enum(["asc", "desc"]);
 
 export const getWorkersQuerySchema = z.object({
   q: z.string().optional(),
-
+  status: z.enum(["ACTIVE", "INACTIVE", "PENDING", "REJECTED"]).optional(),
+  verification: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
   categoryId: z.uuid().optional(),
   roleId: z.uuid().optional(),
   specialtyId: z.uuid().optional(),

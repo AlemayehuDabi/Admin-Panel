@@ -265,7 +265,7 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *     summary: Get list of workers with filters
  *     description: >
  *       Returns a list of workers with optional filters such as category, role,
- *       speciality, work type, required skills, photo availability, pagination, and sorting.
+ *       speciality, work type, required skills, photo availability, status, verification, pagination, and sorting.
  *     tags:
  *       - Worker
  *     parameters:
@@ -318,6 +318,18 @@ router.post("/work-types", validate(createWorkType, "body"), workerController.cr
  *         schema:
  *           type: boolean
  *         description: Filter by whether worker has a profile photo.
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [ACTIVE, INACTIVE, PENDING]
+ *         description: Filter by worker status.
+ *       - in: query
+ *         name: verification
+ *         schema:
+ *           type: string
+ *           enum: [APPROVED, PENDING, REJECTED]
+ *         description: Filter by worker verification status.
  *       - in: query
  *         name: page
  *         schema:
@@ -729,3 +741,4 @@ router.patch("/:workerId/assignment/:applicationId/accept", validate(workerIdSch
 router.patch("/:workerId/assignment/:applicationId/reject", validate(workerIdSchema, "params"), validate(applicationsSchema, "params"), authenticate, workerController.rejectJobAssignment);
 
 export default router;
+

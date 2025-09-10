@@ -72,7 +72,6 @@ export const getTransactions = async (walletId: string, type?: TransactionType) 
   });
 };
 
-
 // Get transaction by ID
 export const getTransactionById = async (id: string) => {
   return prisma.transaction.findUnique({

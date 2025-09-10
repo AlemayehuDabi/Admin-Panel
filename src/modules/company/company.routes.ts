@@ -305,7 +305,7 @@ router.patch("/:id/reject", authenticate, validate(companyParamsSchema, "params"
 
 /**
  * @openapi
- * /company/{id}:
+ * /company/{id}/details:
  *   patch:
  *     tags:
  *       - Company
