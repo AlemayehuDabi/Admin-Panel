@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { NotificationService } from "../notification/notification.service";
 
 type WorkerFilters = {
-  status: ("ACTIVE"| "INACTIVE" | "PENDING" | "REJECTED");
+  status: ("ACTIVE" | "INACTIVE" | "PENDING" | "REJECTED");
   verification: ("PENDING" | "APPROVED" | "REJECTED");
   q?: string;
   categoryId?: string;
@@ -27,7 +27,7 @@ type UpdateWorkerData = {
   password?: string;
   role?: string;
   location?: string | null;
-  
+
   // Worker fields
   categoryId?: string | null;
   roleId?: string | null; // Role relation id in Worker
@@ -39,7 +39,7 @@ type UpdateWorkerData = {
   experience?: string | null;
   profilePhoto?: string | null;
   badges?: string[] | null;
-  
+
   // relations (many-to-many through join tables)
   specialityIds?: string[] | null; // if provided -> replace
   workTypeIds?: string[] | null;   // if provided -> replace
@@ -54,8 +54,11 @@ export const filterWorkers = async (filters: WorkerFilters) => {
   // Build Prisma where
   const where: any = {};
 
-  if (filters.verification) where.user.verification = filters.verification;
-  if (filters.status) where.user.status = filters.status;
+  if (filters.verification || filters.status) {
+    where.user = {}; // initialize relation filter object
+    if (filters.verification) where.user.verification = filters.verification;
+    if (filters.status) where.user.status = filters.status;
+  }
 
   if (filters.categoryId) where.categoryId = filters.categoryId;
   if (filters.roleId) where.roleId = filters.roleId;
