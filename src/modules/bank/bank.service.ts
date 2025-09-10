@@ -25,4 +25,4 @@ export const updateBank = async (id: string, data: Partial<CreateBankDto>) =>
   prisma.bank.update({ where: { id }, data });
 
 export const deleteBank = async (id: string) =>
-  prisma.bank.delete({ where: { id } });
+  prisma.bank.update({ where: { id }, data: { status: "INACTIVE" } });
