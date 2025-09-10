@@ -108,6 +108,7 @@ export const createJob = async (data: {
 export const updateJob = async (jobId: string, data: Partial<{
   title: string;
   description: string;
+  companyId: string;
   requiredSkills: string[];
   jobLocation: string;
   payRate: number;
@@ -118,6 +119,9 @@ export const updateJob = async (jobId: string, data: Partial<{
   additionalInfo?: string;
   status: JobStatus;
 }>) => {
+  if (data.companyId) {
+    throw new Error("Cannot change company of the job");
+  }
   return prisma.job.update({
     where: { id: jobId },
     data,

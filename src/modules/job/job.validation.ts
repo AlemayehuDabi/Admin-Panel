@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 // JobStatus enum (adjust if you have more statuses)
-export const JobStatusSchema = z.enum(["OPEN", "CLOSED", "PENDING", "ACCEPTED", "REJECTED"]);
+export const JobStatusSchema = z.enum(["ACTIVE", "IN_PROGRESS", "CLOSED", "CANCELLED"]);
 
 // Create Job schema
 export const createJobSchema = z.object({
