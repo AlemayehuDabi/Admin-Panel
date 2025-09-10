@@ -17,11 +17,11 @@ export const getUserStats = async () => {
 // Jobs posted vs completed
 export const getJobStats = async () => {
   const totalJobs = await prisma.job.count();
-  const completedJobs = await prisma.job.count({ where: { status: JobStatus.COMPLETED } });
+  const closedJobs = await prisma.job.count({ where: { status: JobStatus.CLOSED } });
   const inProgressJobs = await prisma.job.count({ where: { status: JobStatus.IN_PROGRESS } });
   const activeJobs = await prisma.job.count({ where: { status: JobStatus.ACTIVE } });
 
-  return { totalJobs, completedJobs, inProgressJobs, activeJobs };
+  return { totalJobs, closedJobs, inProgressJobs, activeJobs };
 };
 
 // Wallet totals and transactions
