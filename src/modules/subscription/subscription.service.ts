@@ -49,5 +49,5 @@ export const updatePlan = async (id: string, data: Partial<CreatePlanDto>) => {
 };
 
 export const deletePlan = async (id: string) => {
-    return prisma.plan.delete({ where: { id } });
+    return prisma.plan.update({ where: { id }, data: { status: "INACTIVE" } });
 };
