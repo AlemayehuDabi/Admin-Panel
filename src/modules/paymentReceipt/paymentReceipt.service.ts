@@ -1,5 +1,4 @@
-// src/modules/paymentReceipt/paymentReceipt.service.ts
-import  prisma  from "../../config/prisma";
+import prisma from "../../config/prisma";
 import { Prisma } from "@prisma/client";
 
 export type CreateReceiptDto = {
@@ -11,6 +10,16 @@ export type CreateReceiptDto = {
 };
 
 export const createReceipt = async (userId: string, dto: CreateReceiptDto) => {
+  const [bank, plan] = await prisma.$transaction([
+    prisma.bank.findUnique({ where: { id: dto.bankId } }),
+    prisma.plan.findUnique({ where: { id: dto.planId } }),
+  ]);
+
+  if (!bank) throw new Error("Bank not found");
+  if (!plan) throw new Error("Plan not found");
+  if (bank.status !== "ACTIVE") throw new Error("Bank is not active");
+  if (plan?.status !== "ACTIVE") throw new Error("Plan is not active");
+
   return prisma.paymentReceipt.create({
     data: {
       userId,
@@ -23,6 +32,7 @@ export const createReceipt = async (userId: string, dto: CreateReceiptDto) => {
     },
   });
 };
+
 
 export const getReceiptsByUser = async (userId: string, take = 50, skip = 0) => {
   return prisma.paymentReceipt.findMany({
@@ -102,7 +112,7 @@ export const adminApproveReceipt = async (receiptId: string, adminUserId: string
     const createdTx = await tx.transaction.create({
       data: {
         walletId: wallet.id,
-        type: "SUBSCRIPTION", 
+        type: "SUBSCRIPTION",
         amount,
       },
     });
