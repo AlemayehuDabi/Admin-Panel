@@ -173,6 +173,14 @@ export const getJobById = async (jobId: string) => {
   });
 };
 
+export const applyToJob = async (jobId: string, workerId: string) => {
+  const job = await prisma.job.findUnique({ where: { id: jobId } });
+  const worker = await prisma.worker.findUnique({ where: { id: workerId } });
+  if (!job) throw new Error("Job not found");
+  if (!worker) throw new Error("Worker not found");
+  return prisma.workerJobApplication.create({ data: { workerId, jobId, status: "PENDING", acceptedAssignment: "ACCEPTED" } })
+}
+
 // Accept a worker application
 export const acceptApplication = async (applicationId: string) => {
   return prisma.workerJobApplication.update({

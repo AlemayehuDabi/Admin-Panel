@@ -79,4 +79,9 @@ export const listApplicationsSchema = z.object({
   limit: z.preprocess((v) => (v !== undefined ? Number(v) : undefined), z.number().int().min(1).max(100).optional()),
 });
 
+export const applyToJobSchema = z.object({
+  workerId: z.uuid(),
+  jobId: z.uuid(),
+})
+
 export type ListApplicationsQuery = z.infer<typeof listApplicationsSchema>;

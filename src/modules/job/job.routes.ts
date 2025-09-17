@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
 import validate from "../../middlewares/validate";
-import { applicationIdParamSchema, assignWorkerParamsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema } from "./job.validation";
+import { applicationIdParamSchema, applyToJobSchema, assignWorkerParamsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema } from "./job.validation";
 import { authorize } from "../../middlewares/authorize";
 
 const router = Router();
@@ -279,6 +279,8 @@ router.patch("/applications/:applicationId/accept", authenticate, jobController.
  */
 
 router.patch("/applications/:applicationId/reject", validate(applicationIdParamSchema, "params"), authenticate, jobController.rejectApplication);
+
+router.post("/job/:job/worker/:workerId/apply", validate(applyToJobSchema, "params"), authenticate, jobController.applyToJob )
 
 /**
  * @openapi

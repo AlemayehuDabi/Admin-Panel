@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import * as jobService from "./job.service";
+import { ne } from "@faker-js/faker/.";
 
 // Create job
 export const createJob = async (req: Request, res: Response, next: NextFunction) => {
@@ -51,6 +52,16 @@ export const getJobById = async (req: Request, res: Response, next: NextFunction
     next(err);
   }
 };
+
+// Worker apply to job
+export const applyToJob = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const application = await jobService.applyToJob(req.params.jobId, req.params.workerId);
+    return res.json(application);
+  } catch (err: any) {
+    next(err);
+  }
+}
 
 // Accept worker application
 export const acceptApplication = async (req: Request, res: Response, next: NextFunction) => {
