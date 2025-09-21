@@ -10,7 +10,6 @@ import {
 
 const router = Router();
 
-router.use(authenticate);
 
 /**
  * @openapi
