@@ -174,27 +174,75 @@ export const getJobById = async (jobId: string) => {
 };
 
 export const applyToJob = async (jobId: string, workerId: string) => {
-  const job = await prisma.job.findUnique({ where: { id: jobId } });
+  const job = await prisma.job.findUnique({ where: { id: jobId }, include: { company: true } });
   const worker = await prisma.worker.findUnique({ where: { id: workerId } });
   if (!job) throw new Error("Job not found");
   if (!worker) throw new Error("Worker not found");
-  return prisma.workerJobApplication.create({ data: { workerId, jobId, status: "PENDING", acceptedAssignment: "ACCEPTED" } })
+  const application = await prisma.workerJobApplication.create({ data: { workerId, jobId, status: "PENDING", acceptedAssignment: "ACCEPTED" } });
+
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        job.company.userId,
+        "New Job Application",
+        `A new application has been submitted for your job "${job.title}"`,
+        "ALERT"
+      );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  return application;
+
 }
 
 // Accept a worker application
 export const acceptApplication = async (applicationId: string) => {
-  return prisma.workerJobApplication.update({
+  const updatedApplication = await prisma.workerJobApplication.update({
     where: { id: applicationId },
     data: { status: "ACCEPTED" },
+    include: { worker: { include: { user: true } }, job: true }
   });
+
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        updatedApplication.worker.userId,
+        "Your application has been accepted",
+        `Your application for the job "${updatedApplication.job.title}" has been accepted`,
+        "ALERT"
+      );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  return updatedApplication;
 };
 
 // Reject a worker application
 export const rejectApplication = async (applicationId: string) => {
-  return prisma.workerJobApplication.update({
+  const updatedApplication = await prisma.workerJobApplication.update({
     where: { id: applicationId },
     data: { status: "REJECTED" },
+    include: { worker: { include: { user: true } }, job: true }
   });
+
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        updatedApplication.worker.userId,
+        "Your application has been rejected",
+        `Your application for the job "${updatedApplication.job.title}" has been rejected`,
+        "ALERT"
+      );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  return updatedApplication;
 };
 
 export const assignWorkerToJob = async (jobId: string, workerId: string) => {
@@ -216,7 +264,7 @@ export const assignWorkerToJob = async (jobId: string, workerId: string) => {
         worker.userId,
         "You have been assigned to a job",
         `You have been assigned to the job "${job.title}"`,
-        "NEW_JOB"
+        "JOB_ASSIGNED"
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -228,26 +276,57 @@ export const assignWorkerToJob = async (jobId: string, workerId: string) => {
 };
 
 export const adminContractApproval = async (applicationId: string) => {
-  const application = await prisma.workerJobApplication.findUnique({ where: { id: applicationId } })
+  const application = await prisma.workerJobApplication.findUnique({ where: { id: applicationId }, include: { worker: { include: { user: true } }, job: true } })
   if (!application) throw new Error("Application not found");
-  return await prisma.workerJobApplication.update({
+  const updatedApplication = await prisma.workerJobApplication.update({
     where: { id: applicationId },
     data: {
       adminApproved: "ACCEPTED"
     }
-  })
+  });
+
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        application.worker.userId,
+        "Your application has been approved",
+        `Your application for the job "${application.job.title}" has been approved`,
+        "ALERT"
+      );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  return updatedApplication;
 }
 
 export const adminContractRejection = async (applicationId: string) => {
-  const application = await prisma.workerJobApplication.findUnique({ where: { id: applicationId } })
+  const application = await prisma.workerJobApplication.findUnique({ where: { id: applicationId }, include: { worker: { include: { user: true } }, job: true } })
   if (!application) throw new Error("Application not found");
-  return await prisma.workerJobApplication.update({
+  const updatedApplication = await prisma.workerJobApplication.update({
     where: { id: applicationId },
     data: {
       adminApproved: "REJECTED"
     }
-  })
+  });
+
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        application.worker.userId,
+        "Your application has been rejected",
+        `Your application for the job "${application.job.title}" has been rejected`,
+        "ALERT"
+      );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  return updatedApplication;
 }
+
 
 export const getApplicationsByJob = async (jobId: string) => {
   return prisma.workerJobApplication.findMany({
