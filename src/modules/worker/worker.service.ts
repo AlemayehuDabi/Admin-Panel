@@ -548,7 +548,8 @@ export const acceptAssignment = async (applicationId: string, workerId: string) 
         Admin.map(admin => admin.id),
         `Job agreement accepted by ${result.worker.user.fullName} for the job "${result.job.title}"`,
         `Worker ${result.worker.user.fullName} has been assigned to the job "${result.job.title}"`,
-        "JOB_RESPONSE"
+        "JOB_RESPONSE",
+        result.job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -582,7 +583,8 @@ export const rejectAssignment = async (applicationId: string, workerId: string) 
         Admin.map(admin => admin.id),
         `Job agreement rejected by ${result.worker.user.fullName} for the job "${result.job.title}"`,
         `Worker ${result.worker.user.fullName} has been rejected for the job "${result.job.title}"`,
-        "JOB_RESPONSE"
+        "JOB_RESPONSE",
+        result.job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);

@@ -186,7 +186,8 @@ export const applyToJob = async (jobId: string, workerId: string) => {
         job.company.userId,
         "New Job Application",
         `A new application has been submitted for your job "${job.title}"`,
-        "ALERT"
+        "ALERT",
+        job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -211,7 +212,8 @@ export const acceptApplication = async (applicationId: string) => {
         updatedApplication.worker.userId,
         "Your application has been accepted",
         `Your application for the job "${updatedApplication.job.title}" has been accepted`,
-        "ALERT"
+        "ALERT",
+        updatedApplication.job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -235,7 +237,8 @@ export const rejectApplication = async (applicationId: string) => {
         updatedApplication.worker.userId,
         "Your application has been rejected",
         `Your application for the job "${updatedApplication.job.title}" has been rejected`,
-        "ALERT"
+        "ALERT",
+        updatedApplication.job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -264,7 +267,8 @@ export const assignWorkerToJob = async (jobId: string, workerId: string) => {
         worker.userId,
         "You have been assigned to a job",
         `You have been assigned to the job "${job.title}"`,
-        "JOB_ASSIGNED"
+        "JOB_ASSIGNED",
+        job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -291,7 +295,8 @@ export const adminContractApproval = async (applicationId: string) => {
         application.worker.userId,
         "Your application has been approved",
         `Your application for the job "${application.job.title}" has been approved`,
-        "ALERT"
+        "ALERT",
+        application.job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -317,7 +322,8 @@ export const adminContractRejection = async (applicationId: string) => {
         application.worker.userId,
         "Your application has been rejected",
         `Your application for the job "${application.job.title}" has been rejected`,
-        "ALERT"
+        "ALERT",
+        application.job.id
       );
     } catch (err) {
       console.error("Notification failed:", err);

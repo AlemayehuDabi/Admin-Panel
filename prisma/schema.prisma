@@ -64,6 +64,11 @@ enum NotificationType {
   ALERT // system / admin alerts
   NEW_CANDIDATE // company gets notified a worker applied
   JOB_ASSIGNED // company assinged to worker
+  JOB_COMPLETED // worker completed the job
+  JOB_CANCELLED // job was cancelled
+  JOB_REJECTED // application was rejected
+  JOB_ACCEPTED // application was accepted
+  PAYMENT // payment related notifications
 }
 
 enum PlanInterval {
@@ -368,6 +373,7 @@ model WorkerWorkType {
 model Notification {
   id        String           @id @default(uuid())
   userId    String
+  jobId     String?
   title     String
   message   String
   type      NotificationType
