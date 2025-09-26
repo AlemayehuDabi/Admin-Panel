@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from "express";
 import * as jobService from "./job.service";
-import { ne } from "@faker-js/faker/.";
 
 // Create job
 export const createJob = async (req: Request, res: Response, next: NextFunction) => {
@@ -173,6 +172,42 @@ export const listApplications = async (req: Request, res: Response, next: NextFu
 
     const result = await jobService.getAllApplications(opts);
     res.json(result);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllAssignedJobs = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const jobs = await jobService.getAllAssignedJobs();
+    res.json(jobs);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllCompanyAssignedJobs = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const jobs = await jobService.getAllCompanyAssignedJobs(req.params.companyId);
+    res.json(jobs);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllWorkerAssignedJobs = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const jobs = await jobService.getAllAssignedJobsForWorker(req.params.workerId);
+    res.json(jobs);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAllJobAssignments = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const assignments = await jobService.getAllAssignedForJobs(req.params.jobId);
+    res.json(assignments);
   } catch (err) {
     next(err);
   }

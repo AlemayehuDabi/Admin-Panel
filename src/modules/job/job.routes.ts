@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
 import validate from "../../middlewares/validate";
-import { applicationIdParamSchema, applyToJobSchema, assignWorkerParamsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema } from "./job.validation";
+import { applicationIdParamSchema, applyToJobSchema, assignWorkerParamsSchema, companyIdParamForJobsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema, workerIdParamSchema } from "./job.validation";
 import { authorize } from "../../middlewares/authorize";
 
 const router = Router();
@@ -280,7 +280,7 @@ router.patch("/applications/:applicationId/accept", authenticate, jobController.
 
 router.patch("/applications/:applicationId/reject", validate(applicationIdParamSchema, "params"), authenticate, jobController.rejectApplication);
 
-router.post("/job/:job/worker/:workerId/apply", validate(applyToJobSchema, "params"), authenticate, jobController.applyToJob )
+router.post("/job/:job/worker/:workerId/apply", validate(applyToJobSchema, "params"), authenticate, jobController.applyToJob)
 
 /**
  * @openapi
@@ -453,6 +453,115 @@ router.patch("/admin/:applicationId/approve", authenticate, validate(application
  *         description: Application not found
  */
 router.patch("/admin/:applicationId/reject", authenticate, authorize("ADMIN"), validate(applicationIdParamSchema, "params"), jobController.rejectWorkContract);
+
+/**
+ * @openapi
+ * /jobs/assignments:
+ *   get:
+ *     tags:
+ *       - Job-Assignments
+ *     summary: Get all job assignments
+ *     description: Retrieve a list of all job assignments.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of job assignments
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/assignments", authenticate, jobController.getAllJobAssignments);
+
+/**
+ * @openapi
+ * /jobs/assignments/job/{jobId}:
+ *   get:
+ *     tags:
+ *       - Job-Assignments
+ *     summary: Get all job assignments for a specific job
+ *     description: Retrieve a list of all job assignments for a specific job.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Job ID (uuid)
+ *     responses:
+ *       200:
+ *         description: A list of job assignments for the specified job
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Job not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/assignments/job/:jobId", authenticate, validate(jobIdParamSchema, "params"), jobController.getAllJobAssignments);
+
+/**
+ * @openapi
+ * /jobs/assigned/company/{companyId}:
+ *   get:
+ *     tags:
+ *       - Job-Assignments
+ *     summary: Get all assigned jobs for a specific company
+ *     description: Retrieve a list of all jobs assigned to workers for a specific company.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: companyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Company ID (uuid)
+ *     responses:
+ *       200:
+ *         description: A list of jobs assigned to the specified company
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Company not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/assigned/company/:companyId", authenticate, validate(companyIdParamForJobsSchema, "params"), jobController.getAllCompanyAssignedJobs);
+
+/**
+ * @openapi
+ * /jobs/assigned/worker/{workerId}:
+ *   get:
+ *     tags:
+ *       - Job-Assignments
+ *     summary: Get all assigned jobs for a specific worker
+ *     description: Retrieve a list of all jobs assigned to a specific worker.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: workerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Worker ID (uuid)
+ *     responses:
+ *       200:
+ *         description: A list of jobs assigned to the specified worker
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Worker not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/assigned/worker/:workerId", authenticate, validate(workerIdParamSchema, "params"), jobController.getAllWorkerAssignedJobs);
+
+
 
 export default router;
 

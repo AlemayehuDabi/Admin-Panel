@@ -82,6 +82,18 @@ export const listApplicationsSchema = z.object({
 export const applyToJobSchema = z.object({
   workerId: z.uuid(),
   jobId: z.uuid(),
-})
+});
+
+export const workerIdParamSchema = z.object({
+  workerId: z.uuid()
+});
+
+export const companyIdParamForJobsSchema = z.object({
+  companyId: z.uuid()
+});
+
+export const jobIdParamForApplicationsSchema = z.object({
+  jobId: z.uuid()
+});
 
 export type ListApplicationsQuery = z.infer<typeof listApplicationsSchema>;
