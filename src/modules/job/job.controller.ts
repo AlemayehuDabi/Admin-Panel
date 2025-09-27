@@ -179,7 +179,15 @@ export const listApplications = async (req: Request, res: Response, next: NextFu
 
 export const getAllAssignedJobs = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const jobs = await jobService.getAllAssignedJobs();
+    const { workerId, status, adminApproved, acceptedAssignment } = req.query;
+    // normalize query params into proper types for the service
+    const filters = {
+      workerId: typeof workerId === "string" ? workerId : Array.isArray(workerId) ? String(workerId[0]) : undefined,
+      status: typeof status === "string" ? status : undefined,
+      adminApproved: typeof adminApproved === "string" ? (adminApproved === "true") : undefined,
+      acceptedAssignment: typeof acceptedAssignment === "string" ? (acceptedAssignment === "true") : undefined,
+    };
+    const jobs = await jobService.getAllAssignedJobs(filters as any);
     res.json(jobs);
   } catch (err) {
     next(err);

@@ -17,6 +17,29 @@ const router = Router();
  *     description: Retrieve a list of all job assignments.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: workerId
+ *         schema:
+ *           type: string
+ *         description: Filter by Worker ID (uuid)
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *         description: Filter by Job Status
+ *       - in: query
+ *         name: adminApproved
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, APPROVED, REJECTED]
+ *         description: Filter by Admin Approval Status
+ *       - in: query
+ *         name: acceptedAssignment
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, APPROVED, REJECTED]
+ *         description: Filter by Accepted Assignment Status
  *     responses:
  *       200:
  *         description: A list of job assignments

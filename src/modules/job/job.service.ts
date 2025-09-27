@@ -472,8 +472,14 @@ export const getAllApplications = async (opts: GetApplicationsOptions = {}) => {
   };
 };
 
-export const getAllAssignedJobs = async () => {
+export const getAllAssignedJobs = async (workerId?: string, status?: string, adminApproved?: boolean, acceptedAssignment?: boolean) => {
+  const where: any = {};
+  if (workerId) where.workerId = workerId;
+  if (status) where.status = status;
+  if (adminApproved) where.adminApproved = adminApproved;
+  if (acceptedAssignment) where.acceptedAssignment = acceptedAssignment;
   return prisma.workerJobApplication.findMany({
+    where,
     include: {
       job: { include: { company: true } },
       worker: { include: { user: true } },
