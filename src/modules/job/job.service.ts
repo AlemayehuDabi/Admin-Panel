@@ -4,7 +4,6 @@ import { NotificationService } from "../notification/notification.service";
 import { NotificationRuleService } from "../notification/notificationRuleService";
 import { sendEmail } from "../../utils/mailer";
 import { newJobEmail } from "../../utils/emailTemplates/newJob";
-import { includes } from "zod";
 
 export type GetApplicationsOptions = {
   q?: string;
@@ -188,7 +187,10 @@ export const applyToJob = async (jobId: string, workerId: string) => {
         "New Job Application",
         `A new application has been submitted for your job "${job.title}"`,
         "ALERT",
-        job.id
+        job.id,
+        application.id,
+        application.workerId,
+        job.companyId,
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -214,7 +216,10 @@ export const acceptApplication = async (applicationId: string) => {
         "Your application has been accepted",
         `Your application for the job "${updatedApplication.job.title}" has been accepted`,
         "ALERT",
-        updatedApplication.job.id
+        updatedApplication.job.id,
+        updatedApplication.id,
+        updatedApplication.workerId,
+        updatedApplication.job.companyId,
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -239,7 +244,10 @@ export const rejectApplication = async (applicationId: string) => {
         "Your application has been rejected",
         `Your application for the job "${updatedApplication.job.title}" has been rejected`,
         "ALERT",
-        updatedApplication.job.id
+        updatedApplication.job.id,
+        updatedApplication.id,
+        updatedApplication.workerId,
+        updatedApplication.job.companyId
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -269,7 +277,10 @@ export const assignWorkerToJob = async (jobId: string, workerId: string) => {
         "You have been assigned to a job",
         `You have been assigned to the job "${job.title}"`,
         "JOB_ASSIGNED",
-        job.id
+        job.id,
+        application.id,
+        worker.id,
+        job.companyId
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -297,7 +308,10 @@ export const adminContractApproval = async (applicationId: string) => {
         "Your application has been approved",
         `Your application for the job "${application.job.title}" has been approved`,
         "ALERT",
-        application.job.id
+        application.job.id,
+        application.id,
+        application.workerId,
+        application.job.companyId
       );
     } catch (err) {
       console.error("Notification failed:", err);
@@ -324,7 +338,10 @@ export const adminContractRejection = async (applicationId: string) => {
         "Your application has been rejected",
         `Your application for the job "${application.job.title}" has been rejected`,
         "ALERT",
-        application.job.id
+        application.job.id,
+        application.id,
+        application.workerId,
+        application.job.companyId
       );
     } catch (err) {
       console.error("Notification failed:", err);

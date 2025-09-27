@@ -563,7 +563,10 @@ export const rejectAssignment = async (applicationId: string, workerId: string) 
 
   const application = await prisma.workerJobApplication.findUnique({
     where: { id: applicationId },
-    select: { workerId: true }
+    include: {
+      worker: { include: { user: true } },
+      job: { include: { company: true } },
+    },
   });
 
   if (!application || application.workerId !== workerId) {
@@ -579,12 +582,14 @@ export const rejectAssignment = async (applicationId: string, workerId: string) 
 
   (async () => {
     try {
-      await NotificationService.notifyUsers(
-        Admin.map(admin => admin.id),
-        `Job agreement rejected by ${result.worker.user.fullName} for the job "${result.job.title}"`,
-        `Worker ${result.worker.user.fullName} has been rejected for the job "${result.job.title}"`,
+      await NotificationService.notifyUser(
+        application.job.company.userId,
+        `Job agreement rejected by ${application.worker.user.fullName} for the job "${application.job.title}"`,
+        `Worker ${application.worker.user.fullName} has rejected the assignment for the job "${application.job.title}"`,
         "JOB_RESPONSE",
-        result.job.id
+        application.job.id,
+        workerId,
+        application.job.companyId
       );
     } catch (err) {
       console.error("Notification failed:", err);

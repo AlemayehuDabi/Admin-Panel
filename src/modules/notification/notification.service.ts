@@ -1,13 +1,14 @@
 // services/notificationService.ts
+import { application } from "express";
 import prisma from "../../config/prisma";
 import { sseManager } from "../../infrastructure/notifications/sseManager";
 import { NotificationType } from "@prisma/client"
 
 
 export class NotificationService {
-  static async notifyUser(userId: string, title: string, message: string, type: NotificationType, jobId?: string) {
+  static async notifyUser(userId: string, title: string, message: string, type: NotificationType, jobId?: string, applicationId?: string, workerId?: string, companyId?: string) {
     const notification = await prisma.notification.create({
-      data: { userId, jobId: jobId || "", title, message, type },
+      data: { userId, jobId: jobId || "", title, message, type, applicationId, workerId, companyId },
     });
 
     sseManager.sendToUser(userId, "notification", notification);
@@ -19,7 +20,7 @@ export class NotificationService {
     title: string,
     message: string,
     type: NotificationType,
-    jobId?: string
+    jobId?: string,
   ) {
     const notifications = await prisma.$transaction(
       userIds.map((id) =>

@@ -9,6 +9,26 @@ const router = Router();
 
 /**
  * @openapi
+ * /jobs/assignments:
+ *   get:
+ *     tags:
+ *       - Job-Assignments
+ *     summary: Get all job assignments
+ *     description: Retrieve a list of all job assignments.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of job assignments
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/assignments", authenticate, jobController.getAllJobAssignments);
+
+/**
+ * @openapi
  * /jobs/{companyId}:
  *   post:
  *     tags:
@@ -453,26 +473,6 @@ router.patch("/admin/:applicationId/approve", authenticate, validate(application
  *         description: Application not found
  */
 router.patch("/admin/:applicationId/reject", authenticate, authorize("ADMIN"), validate(applicationIdParamSchema, "params"), jobController.rejectWorkContract);
-
-/**
- * @openapi
- * /jobs/assignments:
- *   get:
- *     tags:
- *       - Job-Assignments
- *     summary: Get all job assignments
- *     description: Retrieve a list of all job assignments.
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: A list of job assignments
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-router.get("/assignments", authenticate, jobController.getAllJobAssignments);
 
 /**
  * @openapi
