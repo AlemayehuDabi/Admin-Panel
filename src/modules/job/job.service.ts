@@ -4,6 +4,7 @@ import { NotificationService } from "../notification/notification.service";
 import { NotificationRuleService } from "../notification/notificationRuleService";
 import { sendEmail } from "../../utils/mailer";
 import { newJobEmail } from "../../utils/emailTemplates/newJob";
+import { includes } from "zod";
 
 export type GetApplicationsOptions = {
   q?: string;
@@ -481,7 +482,7 @@ export const getAllAssignedJobs = async (workerId?: string, status?: string, adm
   return prisma.workerJobApplication.findMany({
     where,
     include: {
-      job: { include: { company: true } },
+      job: { include: { company: { include: { user: true } } } },
       worker: { include: { user: true } },
     },
   });
@@ -490,20 +491,20 @@ export const getAllAssignedJobs = async (workerId?: string, status?: string, adm
 export const getAllCompanyAssignedJobs = async (companyId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { job: { companyId } },
-    include: { job: { include: { company: true } }, worker: { include: { user: true } } },
+    include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
   });
 };
 
 export const getAllAssignedJobsForWorker = async (workerId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { workerId },
-    include: { job: { include: { company: true } }, worker: { include: { user: true } } },
+    include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
   });
 };
 
 export const getAllAssignedForJobs = async (jobId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { jobId },
-    include: { job: { include: { company: true } }, worker: { include: { user: true } } },
+    include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
   });
 };
