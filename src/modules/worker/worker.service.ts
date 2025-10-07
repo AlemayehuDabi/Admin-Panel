@@ -607,4 +607,13 @@ export const getWorkerJobApplications = async (workerId: string) => {
   });
 }
 
+export const toggleWorkerAvailability = async (workerId: string, isAvailable: boolean) => {
+  const worker = await prisma.user.findUnique({ where: { id: workerId }, include: { workerProfile: true } });
+  if (!worker) throw new Error("Worker not found");
+  if (!worker.workerProfile) throw new Error("Worker profile not found");
 
+  return prisma.worker.update({
+    where: { id: worker.workerProfile?.id },
+    data: { isAvailable }
+  });
+}

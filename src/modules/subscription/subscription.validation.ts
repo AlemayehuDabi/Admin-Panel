@@ -1,17 +1,22 @@
+// validators/subscription.validator.ts
 import { z } from "zod";
-import { Request, Response, NextFunction } from "express";
 
-export const createPlanSchema = z.object({
-  name: z.string().min(2),
-  description: z.string().optional(),
-  price: z.number().int().nonnegative(), // in cents
-  interval: z.enum(["MONTHLY", "YEARLY"]),
-  features: z.array(z.string()).optional(),
-  status: z.enum(["ACTIVE", "INACTIVE"]).optional(),
+export const createSubscriptionSchema = z.object({
+  userId: z.string().uuid(),
+  planId: z.string().uuid(),
+  startDate: z.string().optional(), // ISO date string (optional)
+  endDate: z.string().optional().nullable(),
+  autoRenew: z.boolean().optional(),
+  status: z.string().optional(),
 });
 
-export const updatePlanSchema = createPlanSchema.partial();
+export const updateSubscriptionSchema = z.object({
+  startDate: z.string().optional(),
+  endDate: z.string().optional().nullable(),
+  autoRenew: z.boolean().optional(),
+  status: z.string().optional(),
+});
 
-export const idSchema = z.object({
-  id: z.uuid(),
+export const subscriptionIdSchema = z.object({
+  id: z.string().uuid(),
 });

@@ -179,10 +179,11 @@ export const listApplications = async (req: Request, res: Response, next: NextFu
 
 export const getAllAssignedJobs = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { workerId, status, adminApproved, acceptedAssignment } = req.query;
+    const { workerId, companyId, status, adminApproved, acceptedAssignment } = req.query;
     // normalize query params into proper types for the service
     const filters = {
       workerId: typeof workerId === "string" ? workerId : Array.isArray(workerId) ? String(workerId[0]) : undefined,
+      companyId: typeof companyId === "string" ? companyId : undefined,
       status: typeof status === "string" ? status : undefined,
       adminApproved: typeof adminApproved === "string" ? (adminApproved === "true") : undefined,
       acceptedAssignment: typeof acceptedAssignment === "string" ? (acceptedAssignment === "true") : undefined,

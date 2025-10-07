@@ -184,3 +184,20 @@ export const getWorkerJobApplications = async (req: Request, res: Response, next
     next(err);
   }
 };  
+
+export const toggleWorkerAvailability = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { isAvailable } = req.body;
+    console.log("Request User:", req.user);
+    if (req?.user?.id === undefined) {
+      return res.status(400).json(errorResponse("User not Authenticated"));
+    }
+    if (req.user.role !== "WORKER") {
+      return res.status(403).json(errorResponse("Only workers can change availability"));
+    }
+    const worker = await workerService.toggleWorkerAvailability(req?.user?.id, isAvailable);
+    res.json(successResponse(worker, "Worker availability updated successfully"));
+  } catch (err: any) {
+    next(err);
+  }
+};

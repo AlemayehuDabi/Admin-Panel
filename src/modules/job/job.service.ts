@@ -4,7 +4,6 @@ import { NotificationService } from "../notification/notification.service";
 import { NotificationRuleService } from "../notification/notificationRuleService";
 import { sendEmail } from "../../utils/mailer";
 import { newJobEmail } from "../../utils/emailTemplates/newJob";
-import { includes } from "zod";
 
 export type GetApplicationsOptions = {
   q?: string;

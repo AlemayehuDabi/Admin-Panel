@@ -5,7 +5,7 @@ import { authenticate } from "../../middlewares/authMiddleware";
 import { authorize } from "../../middlewares/authorize";
 import validate from "../../middlewares/validate";
 import * as userValidation from "./user.validation";
-import { postReviewSchema, userIdSchema } from "./user.validation";
+import { postReviewSchema, resetPasswordSchema, userIdSchema } from "./user.validation";
 
 const router = Router();
 
@@ -193,7 +193,7 @@ router.patch("/:id/deactivate", validate(userIdSchema, "params"), UserController
  *       400:
  *         description: Validation error (e.g. password too short)
  */
-router.post("/:id/reset-password", validate(userIdSchema, "params"), UserController.resetPassword);
+router.post("/:id/reset-password", validate(userIdSchema, "params"), validate(resetPasswordSchema, "body"), UserController.resetPassword);
 
 // POST /users/:id/force-logout
 /**

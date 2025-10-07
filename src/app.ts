@@ -15,8 +15,9 @@ import walletRoutes from "./modules/wallet/wallet.routes";
 import storage from "./modules/storage/storage.routes";
 import notificationRoutes from "./modules/notification/notification.routes";
 import bankRoutes from "./modules/bank/bank.routes";
-import subscriptionRoutes from "./modules/subscription/subscription.routes";
+import planRoutes from "./modules/plans/plan.routes";
 import paymentReceiptRoutes from "./modules/paymentReceipt/paymentReceipt.routes";
+import subscriptionRoutes from "./modules/Subscription/subscription.routes";
 
 
 const app = express();
@@ -41,7 +42,8 @@ app.use("/api/jobs", jobRoutes);
 app.use("/api/wallets", walletRoutes);
 app.use("/api/storage", storage);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/plans", subscriptionRoutes);
+app.use("/api/plans", planRoutes);
+app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/banks", bankRoutes);
 app.use("/api/receipts", paymentReceiptRoutes);
 

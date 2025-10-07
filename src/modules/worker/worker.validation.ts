@@ -78,6 +78,10 @@ export const workerIdSchema = z.object({
   workerId: z.uuid("Invalid Worker Id or Not Found")
 });
 
+export const toggleAvailabilitySchema = z.object({
+  isAvailable: z.boolean()
+});
+
 export const roleIdSchema = z.object({
   roleId: z.uuid("Invalid Role Id or Not Found")
 });

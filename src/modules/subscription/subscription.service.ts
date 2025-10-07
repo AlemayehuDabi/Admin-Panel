@@ -1,53 +1,149 @@
-import prisma from '../../config/prisma';
-import { Prisma } from '@prisma/client';
+// services/subscription.service.ts
+import prisma from "../../config/prisma";
+import { Prisma } from "@prisma/client";
 
-
-export type CreatePlanDto = {
-    name: string;
-    description?: string;
-    price: number;
-    interval: "MONTHLY" | "YEARLY";
-    features?: string[];
-    status?: "ACTIVE" | "INACTIVE";
+export type CreateSubscriptionDto = {
+    userId: string;
+    planId: string;
+    startDate?: Date;
+    endDate?: Date | null;
+    autoRenew?: boolean;
+    status?: "ACTIVE" | "INACTIVE" | "CANCELLED" | string;
+    skipPlanFetch?: boolean;
 };
 
-export const createPlan = async (data: CreatePlanDto) => {
-    const exists = await prisma.plan.findFirst({ where: { name: data.name } })
-    if (exists) throw new Error('Plan with this name already exists')
-    return prisma.plan.create({
+export const calculateDaysLeft = (subscription: any): number => {
+    const now = new Date();
+    const start = subscription.startDate ? new Date(subscription.startDate) : null;
+    const endFromRow = subscription.endDate ? new Date(subscription.endDate) : null;
+    const planInterval = subscription.plan?.interval;
+
+    // choose end date hierarchy: row endDate -> infer from startDate & plan interval -> 0 days left
+    let end: Date | null = endFromRow;
+
+    if (!end && start && planInterval) {
+        end = new Date(start);
+        if (planInterval === "MONTHLY") end.setMonth(end.getMonth() + 1);
+        else if (planInterval === "YEARLY") end.setFullYear(end.getFullYear() + 1);
+        else if (planInterval === "WEEKLY") end.setDate(end.getDate() + 7);
+        else end.setMonth(end.getMonth() + 1);
+    }
+
+    if (!end) return 0;
+
+    const diffMs = end.getTime() - now.getTime();
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return Math.max(0, days);
+};
+
+/**
+ * Create subscription. Accepts an optional transactional client (tx) so callers
+ * (like payment service) can pass the transaction client.
+ */
+
+export const createSubscription = async (
+    dto: CreateSubscriptionDto,
+    client?: Prisma.TransactionClient | typeof prisma
+) => {
+    const tx = (client as any) ?? prisma;
+    const start = dto.startDate ?? new Date();
+
+    let end = dto.endDate ?? null;
+
+    if (!end && !dto.skipPlanFetch) {
+        const plan = await tx.plan.findUnique({ where: { id: dto.planId } });
+        if (!plan) throw new Error("Plan not found");
+        end = new Date(start);
+        if (plan.interval === "MONTHLY") end.setMonth(end.getMonth() + 1);
+        else if (plan.interval === "YEARLY") end.setFullYear(end.getFullYear() + 1);
+        else if (plan.interval === "WEEKLY") end.setDate(end.getDate() + 7);
+        else end.setMonth(end.getMonth() + 1);
+    }
+
+    const created = await tx.subscription.create({
         data: {
-            name: data.name,
-            description: data.description,
-            price: data.price,
-            interval: data.interval,
-            features: data.features ?? [],
-            status: data.status ?? "ACTIVE",
+            userId: dto.userId,
+            planId: dto.planId,
+            status: dto.status ?? "ACTIVE",
+            startDate: start,
+            endDate: end,
+            autoRenew: dto.autoRenew ?? false,
         },
+        include: { plan: true, user: true },
     });
+
+    // compute daysLeft
+    const now = new Date();
+    const daysLeft = created.endDate ? Math.max(0, Math.ceil((new Date(created.endDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) : 0;
+
+    return { ...created, daysLeft };
 };
 
-export const getPlans = async (take = 20, skip = 0) => {
-    return prisma.plan.findMany({
-        take,
-        skip,
+export const getSubscriptionById = async (id: string) => {
+    const subscription = await prisma.subscription.findUnique({
+        where: { id },
+        include: { plan: true, user: true },
+    });
+    if (!subscription) throw new Error("Subscription not found");
+    const daysLeft = calculateDaysLeft(subscription);
+    return { ...subscription, daysLeft };
+};
+
+export const listSubscriptions = async (filters: {
+    userId?: string;
+    planId?: string;
+    status?: string;
+    take?: number;
+    skip?: number;
+} = {}) => {
+    const where: any = {};
+    if (filters.userId) where.userId = filters.userId;
+    if (filters.planId) where.planId = filters.planId;
+    if (filters.status) where.status = filters.status;
+
+    const subscriptions = await prisma.subscription.findMany({
+        where,
+        take: filters.take ?? 50,
+        skip: filters.skip ?? 0,
         orderBy: { createdAt: "desc" },
+        include: { plan: true, user: true },
     });
+
+    return subscriptions.map((s) => ({ ...s, daysLeft: calculateDaysLeft(s) }));
 };
 
-export const getPlanById = async (id: string) => {
-    return prisma.plan.findUnique({ where: { id } });
+export const updateSubscription = async (id: string, data: Partial<CreateSubscriptionDto>) => {
+    const updateData: any = {};
+    if (data.planId !== undefined) updateData.planId = data.planId;
+    if (data.startDate !== undefined) updateData.startDate = data.startDate;
+    if (data.endDate !== undefined) updateData.endDate = data.endDate;
+    if (data.autoRenew !== undefined) updateData.autoRenew = data.autoRenew;
+    if (data.status !== undefined) updateData.status = data.status;
+
+    const sub = await prisma.subscription.update({
+        where: { id },
+        data: updateData,
+        include: { plan: true, user: true },
+    });
+    return { ...sub, daysLeft: calculateDaysLeft(sub) };
 };
 
-export const updatePlan = async (id: string, data: Partial<CreatePlanDto>) => {
-    return prisma.plan.update({
+export const cancelSubscription = async (id: string) => {
+    // mark cancelled and set endDate to now (or keep endDate and set status)
+    const now = new Date();
+    const sub = await prisma.subscription.update({
         where: { id },
         data: {
-            ...data,
-            features: data.features,
+            status: "CANCELED",
+            endDate: now,
+            autoRenew: false,
         },
+        include: { plan: true, user: true },
     });
+    return { ...sub, daysLeft: calculateDaysLeft(sub) };
 };
 
-export const deletePlan = async (id: string) => {
-    return prisma.plan.update({ where: { id }, data: { status: "INACTIVE" } });
+export const deleteSubscription = async (id: string) => {
+    // physically delete; if you prefer soft-delete, modify here
+    return prisma.subscription.delete({ where: { id } });
 };

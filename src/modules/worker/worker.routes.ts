@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as workerController from "./worker.controller";
 import validate from "../../middlewares/validate";
-import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType, workerRegistrationSchema, workerSchema, applicationsSchema, workerIdSchema } from "./worker.validation";
+import { categoryIdSchema, roleIdSchema, specialityIdSchema, userIdSchema, workerDetailsSchema, createCategory, createRole, createSpeciality, createWorkType, workerRegistrationSchema, workerSchema, applicationsSchema, workerIdSchema, toggleAvailabilitySchema } from "./worker.validation";
 
 const router = Router();
 
@@ -492,6 +492,32 @@ router.get("/:id", validate(userIdSchema, "params"), authenticate, workerControl
  *         description: Unauthorized
  */
 router.patch("/:id/details", validate(userIdSchema, "params"), validate(workerDetailsSchema, "body"), authenticate, workerController.updateWorkerDetails);
+
+/**
+ * @openapi
+ * /workers/toggle-availability:
+ *   patch:
+ *     tags:
+ *       - Worker
+ *     summary: Toggle worker availability
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               isAvailable:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Worker availability updated successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ */
+router.patch("/toggle-availability", validate(toggleAvailabilitySchema, "body"), authenticate, workerController.toggleWorkerAvailability);
 
 /**
  * @openapi

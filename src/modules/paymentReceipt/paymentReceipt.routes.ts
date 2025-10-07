@@ -89,7 +89,7 @@ router.get("/", controller.listUserReceipts);
 router.get("/:id", validate(idSchema, "params"), controller.getUserReceipt);
 
 // Admin routes
-router.use(authorize("ADMIN"))// all routes below require admin
+// router.use(authorize("ADMIN"))// all routes below require admin
 
 /**
  * @openapi

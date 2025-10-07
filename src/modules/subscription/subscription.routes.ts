@@ -1,151 +1,134 @@
-import { Router } from "express";
+import express from "express";
 import * as controller from "./subscription.controller";
-import { createPlanSchema, updatePlanSchema, idSchema } from "./subscription.validation";
-import { authorize } from "../../middlewares/authorize";
-import { authenticate } from "../../middlewares/authMiddleware";
 import validate from "../../middlewares/validate";
-
-const router = Router();
+import {  updateSubscriptionSchema, subscriptionIdSchema } from "./subscription.validation";
 
 
 /**
- * @openapi
+ * @swagger
  * tags:
- *   - name: Plan
- *     description: Plan management (admin only)
+ *   name: Subscription
+ *   description: Subscription management
  */
+const router = express.Router();
 
-// Admin-only CRUD for plans
-// router.use(authorize("ADMIN"));
-router.use(authenticate);
 
 /**
- * @openapi
- * /plans:
+ * @swagger
+ * /subscription:
  *   get:
- *     tags: [Plan]
- *     summary: List plans
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: query
- *         name: take
- *         schema:
- *           type: integer
- *       - in: query
- *         name: skip
- *         schema:
- *           type: integer
+ *     summary: Get all subscriptions
+ *     tags: [Subscription]
  *     responses:
  *       200:
- *         description: Array of plans
+ *         description: List of subscriptions
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Plan'
+ *                 $ref: '#/components/schemas/Subscription'
  */
-router.get("/", controller.listPlans);
+router.get("/", controller.listSubscriptions); // query params for filter
 
 /**
- * @openapi
- * /plans:
- *   post:
- *     tags: [Plan]
- *     summary: Create a plan
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/PlanCreate'
- *     responses:
- *       201:
- *         description: Plan created
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Plan'
- */
-router.post("/", validate(createPlanSchema, "body"), controller.createPlan);
-
-/**
- * @openapi
- * /plans/{id}:
+ * @swagger
+ * /subscription/{id}:
  *   get:
- *     tags: [Plan]
- *     summary: Get a plan by id
- *     security:
- *       - bearerAuth: []
+ *     summary: Get a subscription by ID
+ *     tags: [Subscription]
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
  *         schema:
  *           type: string
+ *         required: true
+ *         description: Subscription ID
  *     responses:
  *       200:
- *         description: Plan object
+ *         description: Subscription data
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Plan'
+ *               $ref: '#/components/schemas/Subscription'
  *       404:
- *         description: Plan not found
+ *         description: Subscription not found
  */
-router.get("/:id", validate(idSchema, "params"), controller.getPlan);
+router.get("/:id", validate(subscriptionIdSchema), controller.getSubscription);
 
 /**
- * @openapi
- * /plans/{id}:
- *   put:
- *     tags: [Plan]
- *     summary: Update a plan
- *     security:
- *       - bearerAuth: []
+ * @swagger
+ * /subscription/{id}:
+ *   patch:
+ *     summary: Update a subscription
+ *     tags: [Subscription]
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
  *         schema:
  *           type: string
+ *         required: true
+ *         description: Subscription ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/PlanUpdate'
+ *             $ref: '#/components/schemas/Subscription'
  *     responses:
  *       200:
- *         description: Updated plan
+ *         description: Subscription updated
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Plan'
+ *               $ref: '#/components/schemas/Subscription'
+ *       400:
+ *         description: Invalid input
+ *       404:
+ *         description: Subscription not found
  */
-router.put("/:id", validate(updatePlanSchema, "body"), controller.updatePlan);
+router.patch("/:id", validate(subscriptionIdSchema, "params"), validate(updateSubscriptionSchema, "body"), controller.updateSubscription);
 
 /**
- * @openapi
- * /plans/{id}:
- *   delete:
- *     tags: [Plan]
- *     summary: Delete a plan
- *     security:
- *       - bearerAuth: []
+ * @swagger
+ * /subscription/{id}/cancel:
+ *   post:
+ *     summary: Cancel a subscription
+ *     tags: Subscription
  *     parameters:
  *       - in: path
  *         name: id
- *         required: true
  *         schema:
  *           type: string
+ *         required: true
+ *         description: Subscription ID
+ *     responses:
+ *       200:
+ *         description: Subscription canceled
+ *       404:
+ *         description: Subscription not found
+ */
+router.post("/:id/cancel", validate(subscriptionIdSchema, "params"), controller.cancelSubscription);
+
+/**
+ * @swagger
+ * /subscription/{id}:
+ *   delete:
+ *     summary: Delete a subscription
+ *     tags: [Subscription]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Subscription ID
  *     responses:
  *       204:
- *         description: Plan deleted
+ *         description: Subscription deleted
+ *       404:
+ *         description: Subscription not found
  */
-router.delete("/:id", validate(idSchema, "params"), controller.removePlan);
+router.delete("/:id", validate(subscriptionIdSchema, "params"), controller.deleteSubscription);
 
 export default router;

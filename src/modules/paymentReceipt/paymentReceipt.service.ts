@@ -1,5 +1,7 @@
 import prisma from "../../config/prisma";
 import { Prisma } from "@prisma/client";
+import * as subscriptionService from "../Subscription/subscription.service";
+import { NotificationService } from "../notification/notification.service";
 
 export type CreateReceiptDto = {
   bankId: string;
@@ -67,16 +69,15 @@ export const adminGetReceipt = getReceiptById;
 
 /**
  * Approve receipt:
- * - ensures receipt is PENDING
- * - creates Transaction
- * - increments/creates user's Wallet
- * - updates the PaymentReceipt linking to the Transaction and setting status APPROVED and verifiedBy
- * - creates Subscription if receipt.planId exists
+ * - If receipt.planId exists => treat as SUBSCRIPTION payment (create transaction, create subscription).
+ *   -> Do NOT increment wallet balance.
+ * - If receipt.planId is null => treat as WALLET TOP-UP (create transaction and increment wallet).
  *
- * All in an atomic transaction.
+ * All writes happen inside one atomic transaction. We precompute plan/endDate before entering tx so
+ * the transaction is light and fast.
  */
 export const adminApproveReceipt = async (receiptId: string, adminUserId: string) => {
-  // fetch receipt with user & plan info
+  // 1) Fetch the receipt with user/wallet & plan BEFORE the transaction (avoid slow tx)
   const receipt = await prisma.paymentReceipt.findUnique({
     where: { id: receiptId },
     include: { user: { include: { wallet: true } }, plan: true },
@@ -84,7 +85,8 @@ export const adminApproveReceipt = async (receiptId: string, adminUserId: string
   if (!receipt) throw new Error("Receipt not found");
   if (receipt.status !== "PENDING") throw new Error("Receipt already processed");
 
-  // Ensure wallet exists (create if missing)
+  // Ensure wallet exists for the user (we will attach transactions to a wallet in both flows).
+  // Create wallet here if missing (outside tx) to reduce tx time. If you prefer, you can create inside tx.
   let wallet = receipt.user.wallet;
   if (!wallet) {
     wallet = await prisma.wallet.create({
@@ -98,69 +100,116 @@ export const adminApproveReceipt = async (receiptId: string, adminUserId: string
 
   const amount = receipt.amount;
 
-  // Optionally validate amount against plan price
-  if (receipt.plan && typeof receipt.plan.price === "number") {
-    // here price is likely stored in cents (Int). Adjust as necessary.
-    if (amount < receipt.plan.price) {
+  // If this is a subscription payment, validate amount now
+  let precomputedEndDate: Date | null = null;
+  if (receipt.planId) {
+    const plan = receipt.plan ?? (await prisma.plan.findUnique({ where: { id: receipt.planId } }));
+    if (!plan) throw new Error("Plan not found");
+
+    // validate payment amount
+    if (typeof plan.price === "number" && amount < plan.price) {
       throw new Error("Paid amount is less than plan price");
     }
+
+    // precompute endDate (so we don't need plan lookup inside tx)
+    precomputedEndDate = new Date();
+    if (plan.interval === "MONTHLY") precomputedEndDate.setMonth(precomputedEndDate.getMonth() + 1);
+    else if (plan.interval === "YEARLY") precomputedEndDate.setFullYear(precomputedEndDate.getFullYear() + 1);
+    else if (plan.interval === "WEEKLY") precomputedEndDate.setDate(precomputedEndDate.getDate() + 7);
+    else precomputedEndDate.setMonth(precomputedEndDate.getMonth() + 1);
   }
 
-  // Run DB transaction:
-  return prisma.$transaction(async (tx) => {
-    // 1. create transaction record
-    const createdTx = await tx.transaction.create({
-      data: {
-        walletId: wallet.id,
-        type: "SUBSCRIPTION",
-        amount,
-      },
-    });
-
-    // 2. increment wallet balance
-    await tx.wallet.update({
-      where: { id: wallet.id },
-      data: {
-        balance: { increment: amount },
-      },
-    });
-
-    // 3. update receipt to APPROVED and connect transaction + verifiedBy
-    const updatedReceipt = await tx.paymentReceipt.update({
-      where: { id: receiptId },
-      data: {
-        status: "APPROVED",
-        transaction: { connect: { id: createdTx.id } },
-        verifiedBy: { connect: { id: adminUserId } },
-      },
-      include: { transaction: true, user: true, plan: true },
-    });
-
-    // 4. create subscription if plan exists
-    let subscription = null;
-    if (receipt.planId) {
-      // decide endDate based on plan interval (assumes Plan has `interval`)
-      const plan = await tx.plan.findUnique({ where: { id: receipt.planId } });
-      const now = new Date();
-      const end = new Date(now);
-      if (plan?.interval === "MONTHLY") end.setMonth(end.getMonth() + 1);
-      else if (plan?.interval === "YEARLY") end.setFullYear(end.getFullYear() + 1);
-      else end.setMonth(end.getMonth() + 1); // fallback
-
-      subscription = await tx.subscription.create({
+  // Run the lean transaction. We choose types: "SUBSCRIPTION" or "TOPUP"
+  return prisma.$transaction(
+    async (tx: Prisma.TransactionClient) => {
+      // 1) create transaction record (attached to wallet)
+      const txType = receipt.planId ? "SUBSCRIPTION" : "DEPOSIT";
+      const createdTx = await tx.transaction.create({
         data: {
-          userId: receipt.userId,
-          planId: receipt.planId,
-          status: "ACTIVE",
-          startDate: now,
-          endDate: end,
-          autoRenew: false,
+          walletId: wallet!.id,
+          type: txType,
+          amount,
         },
       });
-    }
 
-    return { transaction: createdTx, receipt: updatedReceipt, subscription };
-  });
+      // 2) If top-up -> increment wallet balance. If subscription -> DO NOT increment wallet.
+      if (!receipt.planId) {
+        await tx.wallet.update({
+          where: { id: wallet!.id },
+          data: { balance: { increment: amount } },
+        });
+      }
+
+      // 3) update receipt to APPROVED and attach transaction + verifiedBy
+      const updatedReceipt = await tx.paymentReceipt.update({
+        where: { id: receiptId },
+        data: {
+          status: "APPROVED",
+          transaction: { connect: { id: createdTx.id } },
+          verifiedBy: { connect: { id: adminUserId } },
+        },
+        include: { transaction: true, user: true, plan: true },
+      });
+
+      // 4) If planId present -> create subscription (using subscription service, passing tx)
+      let subscription = null;
+      if (receipt.planId) {
+        subscription = await subscriptionService.createSubscription(
+          {
+            userId: receipt.userId,
+            planId: receipt.planId,
+            startDate: new Date(),
+            endDate: precomputedEndDate,
+            autoRenew: false,
+            status: "ACTIVE",
+            skipPlanFetch: true, // avoid extra plan fetch inside service
+          },
+          tx
+        );
+      }
+
+      // 5) Optionally create a notification inside transaction (lightweight)
+      if (subscription) {
+        (async () => {
+          try {
+            await NotificationService.notifyUser(
+              receipt.userId,
+              "Subscription Activated",
+              `Your subscription to ${receipt.plan?.name ?? "plan"} is now active.`,
+              "PAYMENT",
+              undefined,
+              undefined,
+              receipt.id
+            );
+          } catch (err) {
+            console.error("Failed to create notification for subscription activation:", err);
+          }
+        })();
+      } else {
+        (async () => {
+          try {
+            await NotificationService.notifyUser(
+              receipt.userId,
+              "Wallet Top-Up Successful",
+              `Your wallet has been topped up with amount ${amount}.`,
+              "PAYMENT",
+              undefined,
+              undefined,
+              receipt.id
+            );
+          } catch (err) {
+            console.error("Failed to create notification for wallet top-up:", err);
+          }
+        })();
+      }
+
+      return { transaction: createdTx, receipt: updatedReceipt, subscription };
+    },
+    {
+      timeout: 15000, // increase only if necessary; keep transaction lean in general
+      maxWait: 5000,
+    }
+  );
 };
 
 export const adminRejectReceipt = async (receiptId: string, adminUserId: string, reason?: string) => {

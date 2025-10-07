@@ -48,7 +48,7 @@ const router = Router();
  *       500:
  *         description: Internal server error
  */
-router.get("/assignments", authenticate, jobController.getAllJobAssignments);
+router.get("/assignments", authenticate, jobController.getAllAssignedJobs);
 
 /**
  * @openapi

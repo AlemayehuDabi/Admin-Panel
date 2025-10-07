@@ -154,6 +154,7 @@ model Worker {
   licenses         License[]
   portfolio        String[] // file urls
   availability     Json?
+  isAvailable      Boolean   @default(true)
 
   // relations
   reviews      Review[]
@@ -408,7 +409,7 @@ model Subscription {
   status    SubscriptionStatus @default(ACTIVE)
   startDate DateTime           @default(now())
   endDate   DateTime?
-  autoRenew Boolean            @default(true)
+  autoRenew Boolean            @default(false)
 
   user      User     @relation(fields: [userId], references: [id])
   plan      Plan     @relation(fields: [planId], references: [id])
