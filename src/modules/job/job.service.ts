@@ -515,3 +515,11 @@ export const getAllAssignedForJobs = async (jobId: string) => {
     orderBy: { appliedAt: "desc" },
   });
 };
+
+export const getMyJobHistory = async (workerId: string) => {
+  return prisma.workerJobApplication.findMany({
+    where: { workerId,  job: { status: "CLOSED" } },
+    include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
+    orderBy: { appliedAt: "desc" },
+  });
+};

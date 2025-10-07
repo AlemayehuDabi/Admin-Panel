@@ -31,6 +31,11 @@ export const authValidationVerifyResetCodeSchema = z.object({
     code: z.string().length(6, { message: 'Code must be 6 characters long' }),
 });
 
+export const authValidationChangePasswordSchema = z.object({
+    email: z.email({ message: 'Invalid email address' }),
+    oldPassword: z.string().min(6, { message: 'Old password must be at least 6 characters long' }),
+    newPassword: z.string().min(6, { message: 'New password must be at least 6 characters long' }),
+});
 
 
 export type AuthValidationInput = z.infer<typeof authValidationRegisterSchema>;

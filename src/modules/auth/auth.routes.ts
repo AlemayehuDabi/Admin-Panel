@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as authController from "./auth.controller";
 import validate from "../../middlewares/validate";
 import * as validateSchema from "./auth.validation";
+import { authenticate } from "../../middlewares/authMiddleware";
 
 const router = Router();
 
@@ -225,5 +226,38 @@ router.post("/request-password-reset", validate(validateSchema.authValidationReq
  *         description: Invalid code or email
  */
 router.post("/verify-reset-code", validate(validateSchema.authValidationVerifyResetCodeSchema, "body"), authController.verifyResetCode);
+
+/**
+ * @openapi
+ * /auth/change-password:
+ *   post:
+ *     tags:
+ *       - Auth
+ *     summary: Change user password
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               oldPassword:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       400:
+ *         description: Bad request or user not found
+ */
+router.post("/change-password", authenticate, validate(validateSchema.authValidationChangePasswordSchema, "body"), authController.changePassword);
 
 export default router;

@@ -42,13 +42,13 @@ export const register = async (data: any) => {
 };
 
 export const login = async (data: any) => {
-  const { email, password } = data;
+  const { phone, password } = data;
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) throw new Error("Invalid email or password");
+  const user = await prisma.user.findUnique({ where: { phone } });
+  if (!user) throw new Error("Invalid phone number or password");
 
   const valid = await bcrypt.compare(password, user.passwordHash);
-  if (!valid) throw new Error("Invalid email or password");
+  if (!valid) throw new Error("Invalid phone number or password");
 
   if (user.status === "INACTIVE") throw new Error("Account is deactivated");
   if (user.verification !== "APPROVED") throw new Error("Account not verified by admin");
@@ -81,7 +81,7 @@ export const login = async (data: any) => {
   } else if (user.role === "ADMIN") {
     return {
       token: jwt.sign(
-        { id: user.id, role: user.role, email: user.email, tv: user.tokenVersion },
+        { id: user.id, role: user.role, email: user.email, phone: user.phone, tv: user.tokenVersion },
         ENV.JWT_SECRET,
         { expiresIn: "7d" }
       ), user
@@ -178,4 +178,20 @@ export const verifyResetCode = async (email: string, code: string) => {
   });
 
   return "Code verified successfully";
+};
+
+export const changePassword = async (email: string, oldPassword: string, newPassword: string, id: string) => {
+  const user = await prisma.user.findUnique({ where: { id } });
+  if (!user) return { status: 404, message: "User not found" };
+
+  const isMatch = await bcrypt.compare(oldPassword, user.passwordHash);
+  if (!isMatch) return { status: 401, message: "Old password is incorrect" };
+
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { passwordHash: passwordHash },
+  });
+
+  return "Password changed successfully";
 };
