@@ -58,12 +58,12 @@ router.post("/register", validate(validateSchema.authValidationRegisterSchema, "
  *           schema:
  *             type: object
  *             required:
- *               - email
+ *               - phone
  *               - password
  *             properties:
- *               email:
+ *               phone:
  *                 type: string
- *                 format: email
+ *                 format: phone
  *               password:
  *                 type: string
  *     responses:
