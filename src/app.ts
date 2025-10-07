@@ -17,7 +17,7 @@ import notificationRoutes from "./modules/notification/notification.routes";
 import bankRoutes from "./modules/bank/bank.routes";
 import planRoutes from "./modules/plans/plan.routes";
 import paymentReceiptRoutes from "./modules/paymentReceipt/paymentReceipt.routes";
-import subscriptionRoutes from "./modules/Subscription/subscription.routes";
+import subscriptionRoutes from "./modules/subscription/subscription.routes";
 
 
 const app = express();

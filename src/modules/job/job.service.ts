@@ -261,6 +261,10 @@ export const assignWorkerToJob = async (jobId: string, workerId: string) => {
 
   const job = await prisma.job.findUnique({ where: { id: jobId } });
   const worker = await prisma.worker.findUnique({ where: { id: workerId } });
+  const pendingAssignment = await prisma.workerJobApplication.findFirst({ where: { jobId, workerId, status: "PENDING" } });
+  if (pendingAssignment) {
+    throw new Error("Worker has a pending application for this job");
+  }
 
   if (!job) throw new Error("Job not found");
   if (!worker) throw new Error("Worker not found");
@@ -484,6 +488,7 @@ export const getAllAssignedJobs = async (workerId?: string, status?: string, adm
       job: { include: { company: { include: { user: true } } } },
       worker: { include: { user: true } },
     },
+    orderBy: { appliedAt: "desc" },
   });
 };
 
@@ -491,6 +496,7 @@ export const getAllCompanyAssignedJobs = async (companyId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { job: { companyId } },
     include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
+    orderBy: { appliedAt: "desc" },
   });
 };
 
@@ -498,6 +504,7 @@ export const getAllAssignedJobsForWorker = async (workerId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { workerId },
     include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
+    orderBy: { appliedAt: "desc" },
   });
 };
 
@@ -505,5 +512,6 @@ export const getAllAssignedForJobs = async (jobId: string) => {
   return prisma.workerJobApplication.findMany({
     where: { jobId },
     include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
+    orderBy: { appliedAt: "desc" },
   });
 };

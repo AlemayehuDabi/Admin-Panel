@@ -1,6 +1,6 @@
 import prisma from "../../config/prisma";
 import { Prisma } from "@prisma/client";
-import * as subscriptionService from "../Subscription/subscription.service";
+import * as subscriptionService from "../subscription/subscription.service";
 import { NotificationService } from "../notification/notification.service";
 
 export type CreateReceiptDto = {
