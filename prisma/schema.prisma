@@ -110,7 +110,7 @@ model User {
   id           String             @id @default(uuid())
   fullName     String
   email        String             @unique
-  phone        String?            @unique
+  phone        String             @unique
   passwordHash String
   location     String?
   role         UserRole
@@ -372,17 +372,17 @@ model WorkerWorkType {
 }
 
 model Notification {
-  id        String           @id @default(uuid())
-  userId    String
-  jobId     String?
+  id            String           @id @default(uuid())
+  userId        String
+  jobId         String?
   applicationId String?
-  workerId  String?
-  companyId String?
-  title     String
-  message   String
-  type      NotificationType
-  createdAt DateTime         @default(now())
-  isRead    Boolean          @default(false)
+  workerId      String?
+  companyId     String?
+  title         String
+  message       String
+  type          NotificationType
+  createdAt     DateTime         @default(now())
+  isRead        Boolean          @default(false)
 
   user User @relation(fields: [userId], references: [id])
 }

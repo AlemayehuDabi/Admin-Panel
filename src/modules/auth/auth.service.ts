@@ -46,7 +46,6 @@ export const login = async (data: any) => {
 
   const user = await prisma.user.findUnique({ where: { phone } });
   if (!user) throw new Error("Invalid phone number or password");
-
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) throw new Error("Invalid phone number or password");
 
