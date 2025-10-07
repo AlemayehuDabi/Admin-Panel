@@ -518,8 +518,16 @@ export const getAllAssignedForJobs = async (jobId: string) => {
 
 export const getMyJobHistory = async (workerId: string) => {
   return prisma.workerJobApplication.findMany({
-    where: { workerId,  job: { status: "CLOSED" } },
+    where: { workerId,  job: { status: "CLOSED" }, status: "ACCEPTED", adminApproved: "ACCEPTED", acceptedAssignment: "ACCEPTED" },
     include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
     orderBy: { appliedAt: "desc" },
   });
 };
+
+export const getMyJobAssignments = async (workerId: string) => {
+  return prisma.workerJobApplication.findMany({
+    where: { workerId, status: "ASSIGNED", adminApproved: "ACCEPTED", acceptedAssignment: "ACCEPTED" },
+    include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
+    orderBy: { appliedAt: "desc" },
+  });
+}

@@ -584,6 +584,45 @@ router.get("/assigned/company/:companyId", authenticate, validate(companyIdParam
  */
 router.get("/assigned/worker/:workerId", authenticate, validate(workerIdParamSchema, "params"), jobController.getAllWorkerAssignedJobs);
 
+/**
+ * @openapi
+ * /jobs/assignments/me:
+ *   get:
+ *     tags:
+ *       - Job-Assignments
+ *     summary: Get my job assignments (authenticated worker)
+ *     description: Retrieve a list of job assignments for the authenticated worker.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of job assignments for the authenticated worker
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/assignments/me", authenticate, jobController.getMyJobAssignments);
+
+/**
+ * @openapi
+ * /jobs/history/me:
+ *   get:
+ *     tags:
+ *       - Job-Assignments
+ *     summary: Get my job history (authenticated worker)
+ *     description: Retrieve a list of job history entries for the authenticated worker.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: A list of job history entries for the authenticated worker
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/history/me", authenticate, jobController.getMyJobHistory);
 
 
 export default router;

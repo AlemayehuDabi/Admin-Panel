@@ -221,3 +221,27 @@ export const getAllJobAssignments = async (req: Request, res: Response, next: Ne
     next(err);
   }
 };
+
+export const getMyJobAssignments = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const workerId  = req?.user?.id;
+    if(!workerId) throw new Error("Unauthorized");
+    if(req?.user?.role !== "WORKER") throw new Error("Forbidden");
+    const assignments = await jobService.getMyJobAssignments(workerId);
+    res.json(assignments);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMyJobHistory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const workerId  = req?.user?.id;
+    if(!workerId) throw new Error("Unauthorized");
+    if(req?.user?.role !== "WORKER") throw new Error("Forbidden");
+    const assignments = await jobService.getMyJobHistory(workerId);
+    res.json(assignments);
+  } catch (err) {
+    next(err);
+  } 
+};
