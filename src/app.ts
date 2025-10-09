@@ -12,6 +12,12 @@ import workerRoutes from "./modules/worker/worker.routes";
 import analyticsRoutes from "./modules/analytics/analytics.routes";
 import jobRoutes from "./modules/job/job.routes";
 import walletRoutes from "./modules/wallet/wallet.routes";
+import storage from "./modules/storage/storage.routes";
+import notificationRoutes from "./modules/notification/notification.routes";
+import bankRoutes from "./modules/bank/bank.routes";
+import planRoutes from "./modules/plans/plan.routes";
+import paymentReceiptRoutes from "./modules/paymentReceipt/paymentReceipt.routes";
+import subscriptionRoutes from "./modules/subscription/subscription.routes";
 
 
 const app = express();
@@ -29,11 +35,17 @@ app.get("/", (req, res) => {
 // Register routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/companies", companyRoutes);
+app.use("/api/company", companyRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/jobs", jobRoutes);
 app.use("/api/wallets", walletRoutes);
+app.use("/api/storage", storage);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/plans", planRoutes);
+app.use("/api/subscription", subscriptionRoutes);
+app.use("/api/banks", bankRoutes);
+app.use("/api/receipts", paymentReceiptRoutes);
 
 // Setup Swagger
 setupSwagger(app);

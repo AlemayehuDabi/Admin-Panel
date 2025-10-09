@@ -1,8 +1,8 @@
-// src/modules/user/user.controller.ts
+  // src/modules/user/user.controller.ts
 import { Request, Response, NextFunction } from "express";
-import { successResponse, errorResponse } from "@/utils/response";
+import { successResponse, errorResponse } from "../../utils/response";
 import { UserService } from "./user.service";
-import { UserStatus, UserRole, VerificationStatus } from "@generated/prisma";
+import { UserStatus, UserRole, VerificationStatus } from "@prisma/client";
 
 export class UserController {
   static async list(req: Request, res: Response, next: NextFunction) {
@@ -66,6 +66,19 @@ export class UserController {
       res.json(next(err));
     }
   }
+  
+  static async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { id } = req.params;
+      const user = await UserService.getUserById(id);
+      if (!user) {
+        return res.json(errorResponse("User not found", 404));
+      }
+      res.json(successResponse(user, "User fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
 
   static async forceLogout(req: Request, res: Response, next: NextFunction) {
     try {
@@ -105,4 +118,52 @@ export class UserController {
       res.json(next(err));
     }
   }
-} 
+
+  static async getAverageRating(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await UserService.getAverageRating(req.params.id);
+      res.json(successResponse(data, "Average rating fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+  static async getReviews(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = await UserService.getReviews(req.params.id);
+      res.json(successResponse(data, "User reviews fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+  static async getTotalReviews(req: Request, res: Response, next: NextFunction) {
+    try{
+      const data = await UserService.getTotalReviews(req.params.id);
+      res.json(successResponse(data, "Total reviews fetched"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+  static async postReview(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { companyId, rating, comment } = req.body as {
+        companyId: string;
+        rating: number;
+        comment?: string;
+      };
+      
+      const data = await UserService.postReview(
+        req.params.id,
+        companyId,
+        rating,
+        comment
+      );
+      res.json(successResponse(data, "Review posted"));
+    } catch (err) {
+      res.json(next(err));
+    }
+  }
+
+}

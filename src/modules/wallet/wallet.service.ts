@@ -1,5 +1,6 @@
+import { parse } from "path/win32";
 import prisma from "../../config/prisma";
-import { TransactionType } from "@generated/prisma";
+import { TransactionType } from "@prisma/client";
 
 // Get all wallets with optional filters
 export const getAllWallets = async () => {
@@ -22,6 +23,16 @@ export const getWalletByUserId = async (userId: string) => {
   });
 };
 
+// Create wallet for user
+export const createWallet = async (userId: string) => {
+  return prisma.wallet.create({
+    data: {
+      userId,
+      balance: 0,
+    },
+  });
+};
+
 // Adjust wallet balance manually (admin)
 export const adjustWalletBalance = async (
   userId: string,
@@ -30,13 +41,13 @@ export const adjustWalletBalance = async (
 ) => {
   const wallet = await prisma.wallet.findUnique({ where: { userId } });
   if (!wallet) throw new Error("Wallet not found");
-
-  const updatedBalance = wallet.balance + amount;
+  const floatAmount = parseFloat(amount.toString());
+  const updatedBalance = wallet.balance + floatAmount;
 
   const transaction = await prisma.transaction.create({
     data: {
       walletId: wallet.id,
-      amount,
+      amount: floatAmount,
       type,
     },
   });
@@ -60,3 +71,22 @@ export const getTransactions = async (walletId: string, type?: TransactionType) 
     orderBy: { createdAt: "desc" },
   });
 };
+
+// Get transaction by ID
+export const getTransactionById = async (id: string) => {
+  return prisma.transaction.findUnique({
+    where: { id },
+  });
+};
+
+// Get transaction by UserId
+export const getTransactionByUserId = async (userId: string) => {
+  const wallet = await prisma.wallet.findFirst({ where: { userId } });
+  if (!wallet) throw new Error("User Wallet not found");
+
+  return prisma.transaction.findMany({
+    where: { walletId: wallet.id },
+    orderBy: { createdAt: "desc" },
+  });
+};
+

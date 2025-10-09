@@ -1,8 +1,8 @@
 // src/modules/user/user.service.ts
-import prisma from "@/config/prisma";
+import prisma from "../../config/prisma";
 import bcrypt from "bcrypt";
-import { UserRole, UserStatus, VerificationStatus } from "@generated/prisma";
-import { Prisma } from "@generated/prisma";
+import { UserRole, UserStatus, VerificationStatus } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 
 export type ListUsersFilters = {
   email?: string;
@@ -36,11 +36,11 @@ export class UserService {
         verification ? { verification } : undefined,
         dateFrom || dateTo
           ? {
-              createdAt: {
-                gte: dateFrom ? new Date(dateFrom) : undefined,
-                lte: dateTo ? new Date(dateTo) : undefined,
-              },
-            }
+            createdAt: {
+              gte: dateFrom ? new Date(dateFrom) : undefined,
+              lte: dateTo ? new Date(dateTo) : undefined,
+            },
+          }
           : undefined,
       ].filter(Boolean) as Prisma.UserWhereInput[],
     };
@@ -101,6 +101,22 @@ export class UserService {
       data: { passwordHash: hash, tokenVersion: { increment: 1 } }, // also logs out everywhere
     });
     return { success: true };
+  }
+
+  static async getUserById(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        status: true,
+        verification: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+    return user;
   }
 
   static async forceLogout(userId: string) {
@@ -186,5 +202,39 @@ export class UserService {
       totalReferrals: counts.reduce((a, b) => a + b._count, 0),
       byCode: summary,
     };
+  }
+
+  static async getAverageRating(userId: string) {
+    const avgRating = await prisma.review.aggregate({
+      where: { userId: userId },
+      _avg: { rating: true },
+    });
+    return avgRating;
+  }
+
+  static async getTotalReviews(userId: string) {
+    const totalReviews = await prisma.review.count({
+      where: { userId: userId },
+    });
+    return totalReviews;
+  }
+
+  static async getReviews(userId: string) {
+    const reviews = await prisma.review.findMany({
+      where: { userId: userId },
+    });
+    return reviews;
+  }
+
+  static async postReview(userId: string, companyId: string, rating: number, comment?: string) {
+    const review = await prisma.review.create({
+      data: {
+        userId,
+        companyId,
+        rating,
+        comment,
+      },
+    });
+    return review;
   }
 }

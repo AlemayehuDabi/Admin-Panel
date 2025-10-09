@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  // output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -36,9 +36,9 @@ enum VerificationStatus {
 }
 
 enum JobStatus {
-  OPEN
+  ACTIVE
   IN_PROGRESS
-  COMPLETED
+  CLOSED
   CANCELLED
 }
 
@@ -47,6 +47,61 @@ enum TransactionType {
   WITHDRAWAL
   REFERRAL_REWARD
   ADJUSTMENT
+  SUBSCRIPTION
+}
+
+enum ApplicationStatus {
+  PENDING
+  ASSIGNED
+  ACCEPTED
+  REJECTED
+}
+
+enum NotificationType {
+  NEW_JOB // worker gets notified a new job is posted
+  JOB_RESPONSE // worker gets notified about application response
+  COMPANY_REQUEST // worker invited by a company
+  ALERT // system / admin alerts
+  NEW_CANDIDATE // company gets notified a worker applied
+  JOB_ASSIGNED // company assinged to worker
+  JOB_COMPLETED // worker completed the job
+  JOB_CANCELLED // job was cancelled
+  JOB_REJECTED // application was rejected
+  JOB_ACCEPTED // application was accepted
+  PAYMENT // payment related notifications
+}
+
+enum PlanInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum PlanStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  EXPIRED
+  PENDING
+}
+
+enum BankType {
+  BANK
+  WALLET
+}
+
+enum BankStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ReceiptStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // prisma/schema.prisma  (additions only)
@@ -55,33 +110,43 @@ model User {
   id           String             @id @default(uuid())
   fullName     String
   email        String             @unique
-  phone        String?            @unique
+  phone        String             @unique
   passwordHash String
   location     String?
   role         UserRole
-  status       UserStatus         @default(PENDING)
+  status       UserStatus         @default(ACTIVE)
   verification VerificationStatus @default(PENDING)
   referralCode String?            @unique
   referredBy   String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  tokenVersion Int                @default(0) // <— NEW
 
-  workerProfile    Worker?
-  companyProfile   Company?
-  wallet           Wallet?
-  messagesSent     Message[] @relation("SentMessages")
-  messagesReceived Message[] @relation("ReceivedMessages")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  tokenVersion Int      @default(0) // <— NEW
+
+  workerProfile  Worker?
+  companyProfile Company?
+  wallet         Wallet?
+  Review         Review[]
+  Notification   Notification[]
+  PasswordReset  PasswordReset[]
+  Subscription   Subscription[]
+
+  submittedReceipts PaymentReceipt[] @relation("UserSubmittedReceipts")
+  verifiedReceipts  PaymentReceipt[] @relation("ReceiptVerifiedBy")
 
   @@index([referredBy]) // <— NEW
+  @@index([status, verification]) // compound filter
+  @@index([createdAt])
 }
 
 model Worker {
   id               String    @id @default(uuid())
   user             User      @relation(fields: [userId], references: [id])
   userId           String    @unique
-  category         String?
+  categoryId       String?
+  category         Category? @relation(fields: [categoryId], references: [id])
   professionalRole String?
+  profilePhoto     String?
   skills           String[]
   workType         String[]
   experience       String?
@@ -89,54 +154,102 @@ model Worker {
   licenses         License[]
   portfolio        String[] // file urls
   availability     Json?
-  rating           Float?
-  badges           String[]
+  isAvailable      Boolean   @default(true)
 
+  // relations
+  reviews      Review[]
+  specialities WorkerSpeciality[]
+  workTypes    WorkerWorkType[]
+  badges       String[]
   applications WorkerJobApplication[]
+  Role         Role?                  @relation(fields: [roleId], references: [id])
+  roleId       String?
+
+  // index
+  @@index([categoryId])
+  @@index([roleId])
+}
+
+model PasswordReset {
+  id        String   @id @default(uuid())
+  userId    String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model License {
   id          String    @id @default(uuid())
   worker      Worker    @relation(fields: [workerId], references: [id])
   workerId    String
-  name        String
+  name        String?
   issuedAt    DateTime
   expiresAt   DateTime?
   documentUrl String
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int // e.g. 1–5 stars
+  comment   String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+  Worker    Worker? @relation(fields: [workerId], references: [id])
+  workerId  String?
+
+  @@unique([userId, companyId]) // one company can review a user only once
 }
 
 model Company {
   id                    String   @id @default(uuid())
   user                  User     @relation(fields: [userId], references: [id])
   userId                String   @unique
-  name                  String
-  contactInfo           String?
+  companyLogo           String?
+  businessLocation      String?
   verificationDocuments String[] // file urls
   jobs                  Job[]
+  Review                Review[]
 }
 
 model Job {
-  id             String                 @id @default(uuid())
-  title          String
-  description    String
-  requiredSkills String[]
-  location       String?
-  payRate        Float
-  status         JobStatus              @default(OPEN)
-  company        Company                @relation(fields: [companyId], references: [id])
-  companyId      String
-  applications   WorkerJobApplication[]
-  createdAt      DateTime               @default(now())
+  id                String    @id @default(uuid())
+  title             String
+  description       String
+  requiredSkills    String[]
+  jobLocation       String?
+  payRate           Float
+  jobType           String?
+  startDate         DateTime?
+  duration          DateTime?
+  numbersNeedWorker Int       @default(1)
+  additionalInfo    String?
+  status            JobStatus @default(ACTIVE)
+  companyId         String
+
+  //
+  company      Company                @relation(fields: [companyId], references: [id])
+  applications WorkerJobApplication[]
+  createdAt    DateTime               @default(now())
 }
 
 model WorkerJobApplication {
-  id        String   @id @default(uuid())
-  worker    Worker   @relation(fields: [workerId], references: [id])
-  workerId  String
-  job       Job      @relation(fields: [jobId], references: [id])
-  jobId     String
-  status    String   @default("PENDING") // Pending, Accepted, Rejected
-  appliedAt DateTime @default(now())
+  id                 String            @id @default(uuid())
+  worker             Worker            @relation(fields: [workerId], references: [id])
+  workerId           String
+  job                Job               @relation(fields: [jobId], references: [id])
+  jobId              String
+  adminApproved      ApplicationStatus @default(PENDING)
+  status             ApplicationStatus @default(PENDING)
+  acceptedAssignment ApplicationStatus @default(PENDING)
+  appliedAt          DateTime          @default(now())
 }
 
 model Wallet {
@@ -144,26 +257,162 @@ model Wallet {
   user         User          @relation(fields: [userId], references: [id])
   userId       String        @unique
   balance      Float         @default(0.0)
-  currency     String        @default("USD")
+  currency     String        @default("ETB")
   transactions Transaction[]
 }
 
 model Transaction {
-  id        String          @id @default(uuid())
-  wallet    Wallet          @relation(fields: [walletId], references: [id])
-  walletId  String
-  type      TransactionType
-  amount    Float
-  createdAt DateTime        @default(now())
+  id               String           @id @default(uuid())
+  wallet           Wallet           @relation(fields: [walletId], references: [id])
+  walletId         String
+  type             TransactionType
+  amount           Float
+  createdAt        DateTime         @default(now())
+  // relation to PaymentReceipt (optional)
+  receipt          PaymentReceipt?  @relation("ReceiptTransaction")
+  paymentReceiptId String?
+  PaymentReceipt   PaymentReceipt[]
 }
 
-model Message {
-  id         String   @id @default(uuid())
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
-  senderId   String
-  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
-  receiverId String
-  content    String
-  flagged    Boolean  @default(false)
-  createdAt  DateTime @default(now())
+model Bank {
+  id          String     @id @default(uuid())
+  name        String
+  accountName String
+  accountNo   String
+  type        BankType
+  status      BankStatus @default(ACTIVE)
+
+  receipts  PaymentReceipt[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model PaymentReceipt {
+  id          String        @id @default(uuid())
+  user        User          @relation("UserSubmittedReceipts", fields: [userId], references: [id])
+  userId      String
+  bank        Bank          @relation(fields: [bankId], references: [id])
+  bankId      String
+  plan        Plan?         @relation(fields: [planId], references: [id])
+  planId      String?
+  amount      Float
+  referenceNo String?
+  screenshot  String
+  status      ReceiptStatus @default(PENDING)
+
+  verifiedBy    User?        @relation("ReceiptVerifiedBy", fields: [verifiedById], references: [id])
+  verifiedById  String?
+  transaction   Transaction? @relation("ReceiptTransaction", fields: [transactionId], references: [id])
+  transactionId String?      @unique
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  Transaction Transaction[]
+}
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+
+  roles  Role[]
+  Worker Worker[]
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  worker       Worker[]
+  specialities Speciality[]
+}
+
+model Speciality {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  description String?
+  roleId      String
+  role        Role    @relation(fields: [roleId], references: [id])
+
+  workTypes WorkType[]
+  workers   WorkerSpeciality[]
+}
+
+model WorkType {
+  id           String     @id @default(uuid())
+  name         String     @unique
+  description  String?
+  specialityId String
+  speciality   Speciality @relation(fields: [specialityId], references: [id])
+
+  workers WorkerWorkType[]
+}
+
+model WorkerSpeciality {
+  workerId     String
+  specialityId String
+
+  worker     Worker     @relation(fields: [workerId], references: [id])
+  speciality Speciality @relation(fields: [specialityId], references: [id])
+
+  @@id([workerId, specialityId]) // composite primary key
+}
+
+model WorkerWorkType {
+  workerId   String
+  workTypeId String
+
+  worker   Worker   @relation(fields: [workerId], references: [id])
+  workType WorkType @relation(fields: [workTypeId], references: [id])
+
+  @@id([workerId, workTypeId])
+}
+
+model Notification {
+  id            String           @id @default(uuid())
+  userId        String
+  jobId         String?
+  applicationId String?
+  workerId      String?
+  companyId     String?
+  title         String
+  message       String
+  type          NotificationType
+  createdAt     DateTime         @default(now())
+  isRead        Boolean          @default(false)
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Plan {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  description String?
+  price       Int // store in cents (e.g. $10.00 = 1000)
+  interval    PlanInterval // monthly, yearly, etc.
+  features    String[] // list of features (or normalize into another table)
+  status      PlanStatus   @default(ACTIVE)
+
+  subscriptions  Subscription[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  PaymentReceipt PaymentReceipt[]
+}
+
+model Subscription {
+  id        String             @id @default(uuid())
+  userId    String
+  planId    String
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime?
+  autoRenew Boolean            @default(false)
+
+  user      User     @relation(fields: [userId], references: [id])
+  plan      Plan     @relation(fields: [planId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

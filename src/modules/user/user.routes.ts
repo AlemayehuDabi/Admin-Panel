@@ -1,11 +1,11 @@
 // src/modules/user/user.routes.ts
 import { Router, Request, Response, NextFunction } from "express";
 import { UserController } from "./user.controller";
-import { authenticate } from "@/middlewares/authMiddleware";
-import { authorize } from "@/middlewares/authorize";
-import validate from "@/middlewares/validate";
+import { authenticate } from "../../middlewares/authMiddleware";
+import { authorize } from "../../middlewares/authorize";
+import validate from "../../middlewares/validate";
 import * as userValidation from "./user.validation";
-import { userIdSchema } from "./user.validation";
+import { postReviewSchema, resetPasswordSchema, userIdSchema } from "./user.validation";
 
 const router = Router();
 
@@ -30,12 +30,12 @@ const router = Router();
 
 
 router.use(authenticate);
-router.use(authorize("ADMIN"));
+// router.use(authorize("ADMIN"));
 
-// GET /admin/users?email=&role=&status=&verification=&dateFrom=&dateTo=&page=&limit=
+// GET /users?email=&role=&status=&verification=&dateFrom=&dateTo=&page=&limit=
 /**
  * @swagger
- * /admin/users:
+ * /users:
  *   get:
  *     tags:
  *       - Users
@@ -52,7 +52,7 @@ router.use(authorize("ADMIN"));
  *         name: role
  *         schema:
  *           type: string
- *         description: Filter by user role (e.g. ADMIN, USER)
+ *         description: Filter by user role (e.g. ADMIN, WORKER, COMPANY, OWNER, BROKER)
  *       - in: query
  *         name: status
  *         schema:
@@ -62,7 +62,7 @@ router.use(authorize("ADMIN"));
  *         name: verification
  *         schema:
  *           type: string
- *         description: Filter by verification status
+ *         description: Filter by verification status (e.g. PENDING, APPROVED, REJECTED)
  *       - in: query
  *         name: dateFrom
  *         schema:
@@ -91,10 +91,34 @@ router.use(authorize("ADMIN"));
  */
 router.get("/", UserController.list);
 
-// PATCH /admin/users/:id/activate
+// GET /users/{id}
 /**
  * @swagger
- * /admin/users/{id}/activate:
+ * /users/{id}:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get user by ID
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User fetched
+ *       404:
+ *         description: User not found
+ */
+router.get("/:id", validate(userIdSchema, "params"), UserController.getUserById);
+
+// PATCH /users/:id/activate
+/**
+ * @swagger
+ * /users/{id}/activate:
  *   patch:
  *     tags:
  *       - Users
@@ -114,10 +138,10 @@ router.get("/", UserController.list);
  */
 router.patch("/:id/activate", validate(userIdSchema, "params"), UserController.activate);
 
-// PATCH /admin/users/:id/deactivate
+// PATCH /users/:id/deactivate
 /**
  * @swagger
- * /admin/users/{id}/deactivate:
+ * /users/{id}/deactivate:
  *   patch:
  *     tags:
  *       - Users
@@ -137,13 +161,13 @@ router.patch("/:id/activate", validate(userIdSchema, "params"), UserController.a
  */
 router.patch("/:id/deactivate", validate(userIdSchema, "params"), UserController.deactivate);
 
-// POST /admin/users/:id/reset-password   { newPassword: string }
+// POST /users/:id/reset-password   { newPassword: string }
 /**
  * @swagger
- * /admin/users/{id}/reset-password:
+ * /users/{id}/reset-password:
  *   post:
  *     tags:
- *       - Users
+ *       - Auth
  *     summary: Reset a user's password (admin)
  *     security:
  *       - bearerAuth: []
@@ -169,12 +193,12 @@ router.patch("/:id/deactivate", validate(userIdSchema, "params"), UserController
  *       400:
  *         description: Validation error (e.g. password too short)
  */
-router.post("/:id/reset-password", validate(userIdSchema, "params"), UserController.resetPassword);
+router.post("/:id/reset-password", validate(userIdSchema, "params"), validate(resetPasswordSchema, "body"), UserController.resetPassword);
 
-// POST /admin/users/:id/force-logout
+// POST /users/:id/force-logout
 /**
  * @swagger
- * /admin/users/{id}/force-logout:
+ * /users/{id}/force-logout:
  *   post:
  *     tags:
  *       - Users
@@ -193,10 +217,10 @@ router.post("/:id/reset-password", validate(userIdSchema, "params"), UserControl
  */
 router.post("/:id/force-logout", validate(userIdSchema, "params"), UserController.forceLogout);
 
-// POST /admin/users/:id/referral-code/ensure
+// POST /users/:id/referral-code/ensure
 /**
  * @swagger
- * /admin/users/{id}/referral-code/ensure:
+ * /users/{id}/referral-code/ensure:
  *   post:
  *     tags:
  *       - Users
@@ -215,10 +239,10 @@ router.post("/:id/force-logout", validate(userIdSchema, "params"), UserControlle
  */
 router.post("/:id/referral-code/ensure", validate(userIdSchema, "params"), UserController.ensureReferralCode);
 
-// GET /admin/users/:id/referrals
+// GET /users/:id/referrals
 /**
  * @swagger
- * /admin/users/{id}/referrals:
+ * /users/{id}/referrals:
  *   get:
  *     tags:
  *       - Users
@@ -237,10 +261,10 @@ router.post("/:id/referral-code/ensure", validate(userIdSchema, "params"), UserC
  */
 router.get("/:id/referrals", validate(userIdSchema, "params"), UserController.getReferrals);
 
-// GET /admin/users/referral/stats
+// GET //users/referral/stats
 /**
  * @swagger
- * /admin/users/referral/stats/all:
+ * /users/referral/stats/all:
  *   get:
  *     tags:
  *       - Users
@@ -252,5 +276,106 @@ router.get("/:id/referrals", validate(userIdSchema, "params"), UserController.ge
  *         description: Referral stats fetched
  */
 router.get("/referral/stats/all", UserController.referralStats);
+
+/**
+ * @swagger
+ * /users/{id}/reviews:
+ *   post:
+ *     tags:
+ *       - Users
+ *     summary: Post a review for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               companyId:
+ *                 type: string
+ *                 format: uuid
+ *               rating:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 5
+ *               comment:
+ *                 type: string
+ *                 maxLength: 500
+ *     responses:
+ *       200:
+ *         description: Review posted
+ */
+router.post("/:id/reviews", validate(userIdSchema, "params"), validate(postReviewSchema, "body"), UserController.postReview);
+
+/** 
+ * @openapi
+ * /users/{id}/reviews:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get reviews for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User reviews fetched
+ */
+router.get("/:id/reviews", validate(userIdSchema, "params"), UserController.getReviews);
+
+/**
+ * @openapi
+ * /users/{id}/reviews/total:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get total reviews for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User total reviews fetched
+ */
+router.get("/:id/reviews/total", validate(userIdSchema, "params"), UserController.getTotalReviews);
+
+/**
+ * @openapi
+ * /users/{id}/reviews/average:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get average rating for a user
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User average rating fetched
+ */
+router.get("/:id/reviews/average", validate(userIdSchema, "params"), UserController.getAverageRating);
 
 export default router;

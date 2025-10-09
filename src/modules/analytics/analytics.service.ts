@@ -1,5 +1,5 @@
 import prisma from "../../config/prisma";
-import { UserRole, JobStatus } from "@generated/prisma";
+import { UserRole, JobStatus } from "@prisma/client";
 
 // Total users by role
 export const getUserStats = async () => {
@@ -17,11 +17,11 @@ export const getUserStats = async () => {
 // Jobs posted vs completed
 export const getJobStats = async () => {
   const totalJobs = await prisma.job.count();
-  const completedJobs = await prisma.job.count({ where: { status: JobStatus.COMPLETED } });
+  const closedJobs = await prisma.job.count({ where: { status: JobStatus.CLOSED } });
   const inProgressJobs = await prisma.job.count({ where: { status: JobStatus.IN_PROGRESS } });
-  const openJobs = await prisma.job.count({ where: { status: JobStatus.OPEN } });
+  const activeJobs = await prisma.job.count({ where: { status: JobStatus.ACTIVE } });
 
-  return { totalJobs, completedJobs, inProgressJobs, openJobs };
+  return { totalJobs, closedJobs, inProgressJobs, activeJobs };
 };
 
 // Wallet totals and transactions
