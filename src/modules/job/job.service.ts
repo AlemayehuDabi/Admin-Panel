@@ -517,16 +517,19 @@ export const getAllAssignedForJobs = async (jobId: string) => {
 };
 
 export const getMyJobHistory = async (workerId: string) => {
+  const worker = await prisma.worker.findUnique({ where: { userId: workerId } });
   return prisma.workerJobApplication.findMany({
-    where: { workerId,  job: { status: "CLOSED" }, status: "ACCEPTED", adminApproved: "ACCEPTED", acceptedAssignment: "ACCEPTED" },
+    where: { workerId: worker?.id, job: { status: "CLOSED" }, status: "ACCEPTED", adminApproved: "ACCEPTED", acceptedAssignment: "ACCEPTED" },
     include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
     orderBy: { appliedAt: "desc" },
   });
 };
 
 export const getMyJobAssignments = async (workerId: string) => {
+  console.log("Fetching assignments for worker:", workerId);
+  const worker = await prisma.worker.findUnique({ where: { userId: workerId } });
   return prisma.workerJobApplication.findMany({
-    where: { workerId, status: "ASSIGNED", adminApproved: "ACCEPTED", acceptedAssignment: "ACCEPTED" },
+    where: { workerId: worker?.id },
     include: { job: { include: { company: { include: { user: true } } } }, worker: { include: { user: true } } },
     orderBy: { appliedAt: "desc" },
   });

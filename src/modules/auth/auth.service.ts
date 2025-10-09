@@ -8,6 +8,7 @@ import { UserStatus, VerificationStatus } from "@prisma/client";
 import { sendResetEmail } from "../../utils/mailer";
 import { el } from "@faker-js/faker/.";
 import { NotificationService } from "../notification/notification.service";
+import {normalizeEthiopianPhone} from "../../utils/normalization";
 
 
 function generateCode(): string {
@@ -16,8 +17,10 @@ function generateCode(): string {
 
 export const register = async (data: any) => {
   const { fullName, phone, email, password, role, location } = data;
-
-  const existingUser = await prisma.user.findUnique({ where: { email } }) || await prisma.user.findUnique({ where: { phone } });
+  // Normalize phone number
+  const normalizedPhone = normalizeEthiopianPhone(phone);
+  // Check if user already exists
+  const existingUser = await prisma.user.findUnique({ where: { email } }) || await prisma.user.findUnique({ where: { phone: normalizedPhone } });
   if (existingUser) {
     throw new Error("User already exists with this email or phone number");
   }
@@ -43,10 +46,13 @@ export const register = async (data: any) => {
 
 export const login = async (data: any) => {
   const { phone, password } = data;
-
-  const user = await prisma.user.findUnique({ where: { phone } });
+  // Normalize phone number
+  const normalizedPhone = normalizeEthiopianPhone(phone);
+  console.log("Normalized Phone:", normalizedPhone);
+  const user = await prisma.user.findUnique({ where: { phone: normalizedPhone } });
   if (!user) throw new Error("Invalid phone number or password");
   const valid = await bcrypt.compare(password, user.passwordHash);
+  console.log("User found:", valid);
   if (!valid) throw new Error("Invalid phone number or password");
 
   if (user.status === "INACTIVE") throw new Error("Account is deactivated");

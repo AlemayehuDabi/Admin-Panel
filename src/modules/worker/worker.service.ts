@@ -93,6 +93,10 @@ export const filterWorkers = async (filters: WorkerFilters) => {
     ];
   }
 
+  // additional filters for filtering workers with isAvailable
+
+  where.isAvailable = true;
+
   // select minimal useful payload (matches your schema)
   const select = {
     id: true,
@@ -160,7 +164,7 @@ export const filterWorkers = async (filters: WorkerFilters) => {
 // Get worker details by ID
 export const getWorkerById = async (workerId: string) => {
   return prisma.worker.findUnique({
-    where: { id: workerId },
+    where: { id: workerId , isAvailable: true },
     include: {
       user: true,
       licenses: true,
@@ -196,7 +200,7 @@ export const workerRegister = async (data: any) => {
       workerProfile: {
         create: {
           categoryId: categoryId,
-          Role: roleId,
+          roleId: roleId,
           professionalRole: "Pipe Fitter",
           skills,
           portfolio,

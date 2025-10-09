@@ -101,6 +101,7 @@ export const workerRegistrationSchema = z.object({
   // Worker profile
   categoryId: z.string().min(1, "Category is required"),
   professionalRole: z.string().min(1, "Professional role is required"),
+  roleId: z.uuid("Invalid Role Id or Not Found").nonempty("Role is required"),
   skills: z.array(z.string()).nonempty("At least one skill required"),
   portfolio: z.array(z.url("Portfolio must be valid URL")).optional(),
   availability: z.object({

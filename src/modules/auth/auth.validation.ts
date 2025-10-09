@@ -6,7 +6,9 @@ export const authValidationRegisterSchema = z.object({
     fullName: z.string().min(2).max(100),
     phone: z
         .string()
-        .regex(/^(?:\+251(?:9|7)\d{8}|0(?:9|7)\d{8})$/, { message: 'Invalid Ethiopian phone number' }),
+        .regex(/^(?:\+251(?:9|7)\d{8}|0(?:9|7)\d{8})$/, {
+            message: 'Invalid Ethiopian phone number',
+        }),
     location: z.string().min(2).max(100),
     email: z.email({ message: 'Invalid email address' }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
@@ -17,8 +19,10 @@ export const authValidationRegisterSchema = z.object({
 
 export const authValidationLoginSchema = z.object({
     phone: z
-    .string()
-    .regex(/^(?:\+251(?:9|7)\d{8,9}|0(?:9|7)\d{8,9})$/, { message: 'Invalid Ethiopian phone number' }),
+        .string()
+        .regex(/^(?:\+251(?:9|7)\d{8}|0(?:9|7)\d{8})$/, {
+            message: 'Invalid Ethiopian phone number',
+        }),
     password: z.string().min(6, { message: 'Password must be at least 6 characters long' }),
 });
 
