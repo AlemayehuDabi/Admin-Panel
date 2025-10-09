@@ -12,6 +12,7 @@ export const ENV = {
   R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY || "",
   R2_BUCKET: process.env.R2_BUCKET || "",
   R2_ENDPOINT: process.env.R2_ENDPOINT || "",
+  PUBLIC_URL: process.env.PUBLIC_URL || "",
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
   FROM_EMAIL: process.env.FROM_EMAIL || "",
 };

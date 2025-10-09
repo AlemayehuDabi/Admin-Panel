@@ -1,9 +1,10 @@
 import { PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import r2 from "../../config/r2";
-import { ENV as env } from "../../config/env";
+import { ENV, ENV as env } from "../../config/env";
 import { getSignedUrl as awsGetSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const BUCKET = env.R2_BUCKET;
+const PUBLIC_URL = env.PUBLIC_URL;
 
 
 
@@ -16,8 +17,7 @@ export const uploadFile = async (key: string, fileBuffer: Buffer, contentType: s
   });
 
   await r2.send(command);
-  const url = await getSignedUrl(key, 3600);
-  return url;
+  return `${PUBLIC_URL}/${key}`;
 };
 
 export const profilePicture = async (key: string, fileBuffer: Buffer, contentType: string) => {
@@ -29,8 +29,7 @@ export const profilePicture = async (key: string, fileBuffer: Buffer, contentTyp
   });
 
   await r2.send(command);
-  const url = await getSignedUrl(key, 3600);
-  return url;
+  return `${PUBLIC_URL}/${key}`;
 };
 
 export const paymentReceipt = async (key: string, fileBuffer: Buffer, contentType: string) => {
@@ -42,8 +41,7 @@ export const paymentReceipt = async (key: string, fileBuffer: Buffer, contentTyp
   });
 
   await r2.send(command);
-  const url = await getSignedUrl(key, 3600);
-  return url;
+  return `${PUBLIC_URL}/${key}`;
 };
 
 export const getSignedUrl = async (key: string, expiresIn = 3600) => {
