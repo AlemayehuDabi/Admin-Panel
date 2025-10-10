@@ -214,7 +214,7 @@ export const acceptApplication = async (applicationId: string) => {
       await NotificationService.notifyUser(
         updatedApplication.worker.userId,
         "Your application has been accepted",
-        `Your application for the job "${updatedApplication.job.title}" has been accepted`,
+        `Your application for the job "${updatedApplication.job.title}" has been accepted. Please await admin approval.`,
         "ALERT",
         updatedApplication.job.id,
         updatedApplication.id,
@@ -354,6 +354,8 @@ export const adminContractApproval = async (applicationId: string) => {
 
 export const adminContractRejection = async (applicationId: string) => {
   const application = await prisma.workerJobApplication.findUnique({ where: { id: applicationId }, include: { worker: { include: { user: true } }, job: true } })
+  const company = await prisma.company.findUnique({ where: { id: application?.job.companyId }, include: { user: true } });
+  if (!company) throw new Error("Company not found");
   if (!application) throw new Error("Application not found");
   const updatedApplication = await prisma.workerJobApplication.update({
     where: { id: applicationId },
@@ -368,6 +370,24 @@ export const adminContractRejection = async (applicationId: string) => {
         application.worker.userId,
         "Your application has been rejected",
         `Your application for the job "${application.job.title}" has been rejected`,
+        "ALERT",
+        application.job.id,
+        application.id,
+        application.workerId,
+        application.job.companyId
+      );
+    } catch (err) {
+      console.error("Notification failed:", err);
+    }
+  })();
+
+  // Notify company as well
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        company?.userId, // 👈 notify the company instead of the worker
+        "A worker's application has been rejected",
+        `Worker "${application.worker.user.fullName}" has had their application for your job "${application.job.title}" rejected`,
         "ALERT",
         application.job.id,
         application.id,
@@ -554,9 +574,9 @@ export const getMyJobHistory = async (workerId: string) => {
 export const getMyJobAssignments = async (workerId: string, { companyStatus, workStatus, adminStatus }: { companyStatus?: string; workStatus?: string; adminStatus?: string }) => {
   const worker = await prisma.worker.findUnique({ where: { userId: workerId } });
   if (!worker) throw new Error("Worker not found");
-  const where: any = { workerId: worker?.id, status: "ACCEPTED", acceptedAssignment: "ACCEPTED" };
-  if (companyStatus) where.job = { ...where.job, status: companyStatus };
-  if (workStatus) where.status = workStatus;
+  const where: any = { workerId: worker?.id, status: "ACCEPTED", acceptedAssignment: "PENDING" };
+  if (companyStatus) where.status = companyStatus;
+  if (workStatus) where.acceptedAssignment = workStatus;
   if (adminStatus) where.adminApproved = adminStatus;
   console.log("Querying with conditions:", where);
   return prisma.workerJobApplication.findMany({

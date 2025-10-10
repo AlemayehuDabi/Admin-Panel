@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
 import validate from "../../middlewares/validate";
-import { applicationIdParamSchema, applyToJobSchema, assignWorkerParamsSchema, companyIdParamForJobsSchema, companyIdParamSchema, createJobSchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema, workerIdParamSchema } from "./job.validation";
+import { applicationIdParamSchema, applyToJobSchema, assignWorkerParamsSchema, companyIdParamForJobsSchema, companyIdParamSchema, createJobSchema, getMyJobAssignmentsQuerySchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema, workerIdParamSchema } from "./job.validation";
 import { authorize } from "../../middlewares/authorize";
 
 const router = Router();
@@ -627,7 +627,7 @@ router.get("/assigned/worker/:workerId", authenticate, validate(workerIdParamSch
  *       500:
  *         description: Internal server error.
  */
-router.get("/assignments/me", authenticate, jobController.getMyJobAssignments);
+router.get("/assignments/me", authenticate, validate(getMyJobAssignmentsQuerySchema, "query"), jobController.getMyJobAssignments);
 
 /**
  * @openapi
