@@ -104,6 +104,7 @@ export const logout = async (userId: string) => {
   return { message: "Logged out successfully" };
 };
 
+
 export const activateUser = async (userId: string) => {
   const user = await prisma.user.update({
     where: { id: userId },

@@ -594,13 +594,38 @@ router.get("/assigned/worker/:workerId", authenticate, validate(workerIdParamSch
  *     description: Retrieve a list of job assignments for the authenticated worker.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [OPEN, CLOSED, PENDING, ACCEPTED, REJECTED]
+ *         description: Filter by Job Status
+ *       - in: query
+ *         name: companyStatus
+ *         schema:
+ *           type: string
+ *           enum: [OPEN, CLOSED, PENDING, ACCEPTED, REJECTED]
+ *         description: Filter by Company Status
+ *       - in: query
+ *         name: workStatus
+ *         schema:
+ *           type: string
+ *           enum: [OPEN, CLOSED, PENDING, ACCEPTED, REJECTED]
+ *         description: Filter by Work Status
+ *       - in: query
+ *         name: adminStatus
+ *         schema:
+ *           type: string
+ *           enum: [OPEN, CLOSED, PENDING, ACCEPTED, REJECTED]
+ *         description: Filter by Admin Status
  *     responses:
  *       200:
- *         description: A list of job assignments for the authenticated worker
+ *         description: A list of job assignments for the authenticated worker.
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized.
  *       500:
- *         description: Internal server error
+ *         description: Internal server error.
  */
 router.get("/assignments/me", authenticate, jobController.getMyJobAssignments);
 
