@@ -99,7 +99,7 @@ export const jobIdParamForApplicationsSchema = z.object({
 export const getMyJobAssignmentsQuerySchema = z.object({
   companyStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).optional(),
   workStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).optional(),
-  adminStatus: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+  adminStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).optional(),
 });
 
 export type ListApplicationsQuery = z.infer<typeof listApplicationsSchema>;
