@@ -1,7 +1,8 @@
 import express from "express";
 import * as controller from "./subscription.controller";
 import validate from "../../middlewares/validate";
-import {  updateSubscriptionSchema, subscriptionIdSchema } from "./subscription.validation";
+import { authenticate } from "../../middlewares/authMiddleware";
+import { updateSubscriptionSchema, subscriptionIdSchema } from "./subscription.validation";
 
 
 /**
@@ -130,5 +131,39 @@ router.post("/:id/cancel", validate(subscriptionIdSchema, "params"), controller.
  *         description: Subscription not found
  */
 router.delete("/:id", validate(subscriptionIdSchema, "params"), controller.deleteSubscription);
+
+/**
+ * @swagger
+ * /subscription/me:
+ *   get:
+ *     summary: Get my subscriptions
+ *     tags: [Subscription]
+ *     responses:
+ *       200:
+ *         description: List of my subscriptions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Subscription'
+ */
+router.get("/me", authenticate, controller.mySubscriptions);
+
+/**
+ * @swagger
+ * /subscription/me/active:
+ *   get:
+ *     summary: Get my active subscription
+ *     tags: [Subscription]
+ *     responses:
+ *       200:
+ *         description: My active subscription
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Subscription'
+ */
+router.get("/me/active", authenticate, controller.getMyActiveSubscription);
 
 export default router;

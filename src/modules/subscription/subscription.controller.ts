@@ -69,3 +69,29 @@ export const deleteSubscription = async (req: Request, res: Response) => {
     return res.status(400).json(errorResponse(err.message || "Failed to delete subscription"));
   }
 };
+
+export const mySubscriptions = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json(errorResponse("Unauthorized"));
+    }
+    const subscriptions = await subscriptionService.getMySubscriptions(userId);
+    return res.json(successResponse(subscriptions, "My subscriptions retrieved successfully"));
+  } catch (err: any) {
+    return res.status(500).json(errorResponse(err.message || "Failed to retrieve subscriptions"));
+  }
+};
+
+export const getMyActiveSubscription = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json(errorResponse("Unauthorized"));
+    }
+    const subscription = await subscriptionService.getMyActiveSubscription(userId);
+    return res.json(successResponse(subscription, "My active subscription retrieved successfully"));
+  } catch (err: any) {
+    return res.status(500).json(errorResponse(err.message || "Failed to retrieve active subscription"));
+  }
+};

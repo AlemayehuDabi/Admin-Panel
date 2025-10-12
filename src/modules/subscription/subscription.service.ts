@@ -147,3 +147,20 @@ export const deleteSubscription = async (id: string) => {
     // physically delete; if you prefer soft-delete, modify here
     return prisma.subscription.delete({ where: { id } });
 };
+
+export const getMySubscriptions = async (userId: string) => {
+    const subs = await prisma.subscription.findMany({
+        where: { userId },
+        include: { plan: true, user: true },
+    });
+    return subs.map((s) => ({ ...s, daysLeft: calculateDaysLeft(s) }));
+};
+
+export const getMyActiveSubscription = async (userId: string) => {
+    const subs = await prisma.subscription.findMany({
+        where: { userId, status: "ACTIVE" },
+        include: { plan: true, user: true },
+    });
+    if (!subs) throw new Error("Active subscription not found");
+    return subs.map((s) => ({ ...s, daysLeft: calculateDaysLeft(s) }));
+};

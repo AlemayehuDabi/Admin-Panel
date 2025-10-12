@@ -97,6 +97,7 @@ export const workerRegistrationSchema = z.object({
   phone: z.string().optional(),
   password: z.string().min(6, "Password must be at least 6 characters"),
   role: z.string().min(1, "Role is required"),
+  
 
   // Worker profile
   categoryId: z.string().min(1, "Category is required"),
