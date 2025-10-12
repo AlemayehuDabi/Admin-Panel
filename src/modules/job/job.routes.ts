@@ -2,7 +2,7 @@ import { Router } from "express";
 import { authenticate } from "../../middlewares/authMiddleware";
 import * as jobController from "./job.controller";
 import validate from "../../middlewares/validate";
-import { applicationIdParamSchema, applyToJobSchema, assignWorkerParamsSchema, companyIdParamForJobsSchema, companyIdParamSchema, createJobSchema, getMyJobAssignmentsQuerySchema, jobFiltersSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema, workerIdParamSchema } from "./job.validation";
+import { applicationIdParamSchema, applyToJobSchema, assignWorkerParamsSchema, companyIdParamForJobsSchema, companyIdParamSchema, createJobSchema, getMyJobAssignmentsQuerySchema, jobFiltersSchema, JobIdParamSchema, jobIdParamSchema, listApplicationsSchema, updateJobSchema, workerIdParamSchema } from "./job.validation";
 import { authorize } from "../../middlewares/authorize";
 
 const router = Router();
@@ -49,6 +49,124 @@ const router = Router();
  *         description: Internal server error
  */
 router.get("/assignments", authenticate, jobController.getAllAssignedJobs);
+
+/**
+ * @openapi
+ * /api/jobs/applications:
+ *   get:
+ *     summary: List worker job applications with powerful search & filter
+ *     tags:
+ *       - Job
+ *     description: |
+ *       Returns paginated worker job applications with search, filters and pagination.
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search across job title, description and company name.
+ *       - in: query
+ *         name: skills
+ *         schema:
+ *           type: string
+ *         description: Comma-separated list of required skills.
+ *       - in: query
+ *         name: jobLocation
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: jobType
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: jobStatus
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: applicationStatus
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: adminApproved
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: acceptedAssignment
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: appliedFrom
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: appliedTo
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: payRateMin
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: payRateMax
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [appliedAt, payRate, startDate, createdAt]
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *     responses:
+ *       '200':
+ *         description: Successful response
+ *       '400':
+ *         description: Validation error
+ *       '500':
+ *         description: Internal server error
+ */
+router.get("/applications", validate(listApplicationsSchema, "query"), authenticate, jobController.listApplications);
+
+/**
+ * @openapi
+ * /jobs/applications/job/{jobId}:
+ *   get:
+ *     summary: Get applications for a specific job
+ *     tags:
+ *       - Job
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Job ID (uuid)
+ *     responses:
+ *       200:
+ *         description: A list of applications for the job
+ *       404:
+ *         description: Job not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/applications/job/:jobId", validate(JobIdParamSchema, "params"), authenticate, jobController.getApplicationsByJob);
+
 
 /**
  * @openapi
@@ -355,99 +473,6 @@ router.post("/job/:job/worker/:workerId/apply", validate(applyToJobSchema, "para
  *         description: Job or worker not found
  */
 router.post("/:jobId/assign/:workerId", validate(assignWorkerParamsSchema, "params"), authenticate, jobController.assignWorkerToJob);
-
-/**
- * @openapi
- * /api/jobs/applications:
- *   get:
- *     summary: List worker job applications with powerful search & filter
- *     tags:
- *       - Job
- *     description: |
- *       Returns paginated worker job applications with search, filters and pagination.
- *     parameters:
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Search across job title, description and company name.
- *       - in: query
- *         name: skills
- *         schema:
- *           type: string
- *         description: Comma-separated list of required skills.
- *       - in: query
- *         name: jobLocation
- *         schema:
- *           type: string
- *       - in: query
- *         name: jobType
- *         schema:
- *           type: string
- *       - in: query
- *         name: jobStatus
- *         schema:
- *           type: string
- *       - in: query
- *         name: applicationStatus
- *         schema:
- *           type: string
- *       - in: query
- *         name: adminApproved
- *         schema:
- *           type: string
- *       - in: query
- *         name: acceptedAssignment
- *         schema:
- *           type: string
- *       - in: query
- *         name: appliedFrom
- *         schema:
- *           type: string
- *           format: date-time
- *       - in: query
- *         name: appliedTo
- *         schema:
- *           type: string
- *           format: date-time
- *       - in: query
- *         name: payRateMin
- *         schema:
- *           type: number
- *       - in: query
- *         name: payRateMax
- *         schema:
- *           type: number
- *       - in: query
- *         name: sortBy
- *         schema:
- *           type: string
- *           enum: [appliedAt, payRate, startDate, createdAt]
- *       - in: query
- *         name: sortOrder
- *         schema:
- *           type: string
- *           enum: [asc, desc]
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *           minimum: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           minimum: 1
- *           maximum: 100
- *     responses:
- *       '200':
- *         description: Successful response
- *       '400':
- *         description: Validation error
- *       '500':
- *         description: Internal server error
- */
-router.get("/applications", validate(listApplicationsSchema, "query"), authenticate, jobController.getApplicationsByJob);
 
 /**
  * /jobs/admin/{applicationId}/approve:

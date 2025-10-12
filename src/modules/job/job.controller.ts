@@ -117,8 +117,9 @@ export const rejectWorkContract = async (req: Request, res: Response, next: Next
 
 export const getApplicationsByJob = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const applications = jobService.getApplicationsByJob(req.params.jobId);
-    return applications;
+    console.log("Fetching applications for job:", req.params.jobId);
+    const applications = await jobService.getApplicationsByJob(req.params.jobId);
+    return res.json(applications);
   } catch (err) {
     next(err)
   }

@@ -95,7 +95,7 @@ router.patch("/:id", validate(subscriptionIdSchema, "params"), validate(updateSu
  * /subscription/{id}/cancel:
  *   post:
  *     summary: Cancel a subscription
- *     tags: Subscription
+ *     tags: [Subscription]
  *     parameters:
  *       - in: path
  *         name: id

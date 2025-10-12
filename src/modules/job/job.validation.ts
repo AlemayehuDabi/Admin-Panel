@@ -39,6 +39,10 @@ export const jobIdParamSchema = z.object({
     id: z.uuid()
 });
 
+export const JobIdParamSchema = z.object({
+    jobId: z.uuid()
+});
+
 export const companyIdParamSchema = z.object({
     companyId: z.uuid()
 });
