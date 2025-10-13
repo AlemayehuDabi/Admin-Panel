@@ -34,6 +34,40 @@ router.get("/", controller.listSubscriptions); // query params for filter
 
 /**
  * @swagger
+ * /subscription/me:
+ *   get:
+ *     summary: Get my subscriptions
+ *     tags: [Subscription]
+ *     responses:
+ *       200:
+ *         description: List of my subscriptions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Subscription'
+ */
+router.get("/me", authenticate, controller.mySubscriptions);
+
+/**
+ * @swagger
+ * /subscription/me/active:
+ *   get:
+ *     summary: Get my active subscription
+ *     tags: [Subscription]
+ *     responses:
+ *       200:
+ *         description: My active subscription
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Subscription'
+ */
+router.get("/me/active", authenticate, controller.getMyActiveSubscription);
+
+/**
+ * @swagger
  * /subscription/{id}:
  *   get:
  *     summary: Get a subscription by ID
@@ -132,38 +166,5 @@ router.post("/:id/cancel", validate(subscriptionIdSchema, "params"), controller.
  */
 router.delete("/:id", validate(subscriptionIdSchema, "params"), controller.deleteSubscription);
 
-/**
- * @swagger
- * /subscription/me:
- *   get:
- *     summary: Get my subscriptions
- *     tags: [Subscription]
- *     responses:
- *       200:
- *         description: List of my subscriptions
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Subscription'
- */
-router.get("/me", authenticate, controller.mySubscriptions);
-
-/**
- * @swagger
- * /subscription/me/active:
- *   get:
- *     summary: Get my active subscription
- *     tags: [Subscription]
- *     responses:
- *       200:
- *         description: My active subscription
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Subscription'
- */
-router.get("/me/active", authenticate, controller.getMyActiveSubscription);
 
 export default router;
