@@ -39,6 +39,10 @@ export const jobIdParamSchema = z.object({
     id: z.uuid()
 });
 
+export const JobIdParamSchema = z.object({
+    jobId: z.uuid()
+});
+
 export const companyIdParamSchema = z.object({
     companyId: z.uuid()
 });
@@ -94,6 +98,12 @@ export const companyIdParamForJobsSchema = z.object({
 
 export const jobIdParamForApplicationsSchema = z.object({
   jobId: z.uuid()
+});
+
+export const getMyJobAssignmentsQuerySchema = z.object({
+  companyStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).optional(),
+  workStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).optional(),
+  adminStatus: z.enum(["PENDING", "ACCEPTED", "REJECTED"]).optional(),
 });
 
 export type ListApplicationsQuery = z.infer<typeof listApplicationsSchema>;

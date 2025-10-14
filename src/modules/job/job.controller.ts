@@ -88,6 +88,9 @@ export const assignWorkerToJob = async (req: Request, res: Response, next: NextF
     const application = await jobService.assignWorkerToJob(req.params.jobId, req.params.workerId);
     res.json(application);
   } catch (err: any) {
+    if (err.message === "Worker already has a pending or active job assignment") {
+      res.status(400);
+    }
     next(err);
   }
 };
@@ -114,8 +117,9 @@ export const rejectWorkContract = async (req: Request, res: Response, next: Next
 
 export const getApplicationsByJob = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const applications = jobService.getApplicationsByJob(req.params.jobId);
-    return applications;
+    console.log("Fetching applications for job:", req.params.jobId);
+    const applications = await jobService.getApplicationsByJob(req.params.jobId);
+    return res.json(applications);
   } catch (err) {
     next(err)
   }
@@ -224,10 +228,14 @@ export const getAllJobAssignments = async (req: Request, res: Response, next: Ne
 
 export const getMyJobAssignments = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const workerId  = req?.user?.id;
-    if(!workerId) throw new Error("Unauthorized");
-    if(req?.user?.role !== "WORKER") throw new Error("Forbidden");
-    const assignments = await jobService.getMyJobAssignments(workerId);
+    const workerId = req?.user?.id;
+    const { companyStatus: rawCompanyStatus, workStatus: rawWorkStatus, adminStatus: rawAdminStatus } = req.query;
+    const companyStatus = typeof rawCompanyStatus === "string" ? rawCompanyStatus : undefined;
+    const workStatus = typeof rawWorkStatus === "string" ? rawWorkStatus : undefined;
+    const adminStatus = typeof rawAdminStatus === "string" ? rawAdminStatus : undefined;
+    if (!workerId) throw new Error("Unauthorized");
+    if (req?.user?.role !== "WORKER") throw new Error("Forbidden");
+    const assignments = await jobService.getMyJobAssignments(workerId, { companyStatus, workStatus, adminStatus });
     res.json(assignments);
   } catch (err) {
     next(err);
@@ -236,12 +244,12 @@ export const getMyJobAssignments = async (req: Request, res: Response, next: Nex
 
 export const getMyJobHistory = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const workerId  = req?.user?.id;
-    if(!workerId) throw new Error("Unauthorized");
-    if(req?.user?.role !== "WORKER") throw new Error("Forbidden");
+    const workerId = req?.user?.id;
+    if (!workerId) throw new Error("Unauthorized");
+    if (req?.user?.role !== "WORKER") throw new Error("Forbidden");
     const assignments = await jobService.getMyJobHistory(workerId);
     res.json(assignments);
   } catch (err) {
     next(err);
-  } 
+  }
 };

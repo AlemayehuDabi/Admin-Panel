@@ -10,7 +10,6 @@ export class NotificationService {
     const notification = await prisma.notification.create({
       data: { userId, jobId: jobId || "", title, message, type, applicationId, workerId, companyId },
     });
-
     sseManager.sendToUser(userId, "notification", notification);
     return notification;
   }

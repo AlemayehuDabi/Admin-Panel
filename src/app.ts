@@ -18,6 +18,7 @@ import bankRoutes from "./modules/bank/bank.routes";
 import planRoutes from "./modules/plans/plan.routes";
 import paymentReceiptRoutes from "./modules/paymentReceipt/paymentReceipt.routes";
 import subscriptionRoutes from "./modules/subscription/subscription.routes";
+import chapaRoutes from "./modules/onlinePayment/chapa.route";
 
 
 const app = express();
@@ -46,6 +47,7 @@ app.use("/api/plans", planRoutes);
 app.use("/api/subscription", subscriptionRoutes);
 app.use("/api/banks", bankRoutes);
 app.use("/api/receipts", paymentReceiptRoutes);
+app.use("/api/online-payments", chapaRoutes);
 
 // Setup Swagger
 setupSwagger(app);

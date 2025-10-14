@@ -15,4 +15,9 @@ export const ENV = {
   PUBLIC_URL: process.env.PUBLIC_URL || "",
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
   FROM_EMAIL: process.env.FROM_EMAIL || "",
+  CHAPA_API_BASE: 'https://api.chapa.co/v1',
+  CHAPA_SECRET: process.env.CHAPA_SECRET_KEY,
+  CHAPA_CALLBACK_URL: process.env.CHAPA_CALLBACK_URL,
+  CHAPA_RETURN_URL: process.env.CHAPA_RETURN_URL,
+  CHAPA_WEBHOOK_SECRET: process.env.CHAPA_WEBHOOK_SECRET,
 };
