@@ -15,9 +15,6 @@ const router = Router();
  *     description: Plan management (admin only)
  */
 
-// Admin-only CRUD for plans
-// router.use(authorize("ADMIN"));
-router.use(authenticate);
 
 /**
  * @openapi
@@ -47,6 +44,10 @@ router.use(authenticate);
  *                 $ref: '#/components/schemas/Plan'
  */
 router.get("/", controller.listPlans);
+
+// Admin-only CRUD for plans
+// router.use(authorize("ADMIN"));
+router.use(authenticate);
 
 /**
  * @openapi
