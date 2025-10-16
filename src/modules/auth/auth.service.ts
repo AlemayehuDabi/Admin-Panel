@@ -128,12 +128,35 @@ export const deactivateUser = async (userId: string) => {
 }
 
 export const approveUser = async (userId: string) => {
-  return prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: {
       verification: VerificationStatus.APPROVED,
     },
   });
+
+  (async () => {
+    try {
+      await sendResetEmail(user?.email, "Your account has been approved by admin. You can now log in and start using our services.");
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  })();
+
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        userId,
+        "Your application has been approved",
+        `Congratulations ${user?.fullName}, your account has been approved.`,
+        "ALERT"
+      );
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  })();
+
+  return user;
 };
 
 export const rejectUser = async (userId: string) => {
