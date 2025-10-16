@@ -196,6 +196,6 @@ router.post("/worker/national-id", upload.single("file"), validate(uploadProfile
  *         description: Server error
  */
 
-router.post("/payment-receipt", authenticate, upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadPaymentReceipt);
+router.post("/payment-receipt", upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadPaymentReceipt);
 
 export default router;
