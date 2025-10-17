@@ -2,7 +2,6 @@ import { Router } from "express";
 import { uploadProfilePicture, uploadNationalId, uploadCompanyFileController, uploadWorkerFileController, uploadPaymentReceipt } from "./storage.controller";
 import { upload } from "../../middlewares/upload";
 import validate from "../../middlewares/validate";
-import { authenticate } from "../../middlewares/authMiddleware";
 import {
     uploadFileValidation,
     uploadProfilePictureValidation,

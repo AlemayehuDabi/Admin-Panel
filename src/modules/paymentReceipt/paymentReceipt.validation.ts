@@ -9,6 +9,10 @@ export const createReceiptSchema = z.object({
   screenshot: z.string().min(1), // a URL/path to uploaded image (we don't implement file upload here)
 });
 
+export const userIdSchema = z.object({
+  userId: z.uuid(),
+});
+
 export const adminRejectSchema = z.object({
   reason: z.string().min(3).optional(),
 });
