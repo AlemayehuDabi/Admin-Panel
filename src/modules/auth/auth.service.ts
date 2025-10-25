@@ -48,15 +48,13 @@ export const login = async (data: any) => {
   const { phone, password } = data;
   // Normalize phone number
   const normalizedPhone = normalizeEthiopianPhone(phone);
-  console.log("Normalized Phone:", normalizedPhone);
   const user = await prisma.user.findUnique({ where: { phone: normalizedPhone } });
   if (!user) throw new Error("Invalid phone number or password");
   const valid = await bcrypt.compare(password, user.passwordHash);
-  console.log("User found:", valid);
   if (!valid) throw new Error("Invalid phone number or password");
 
   if (user.status === "INACTIVE") throw new Error("Account is deactivated");
-  if (user.verification !== "APPROVED") throw new Error("Account not verified by admin");
+  // if (user.verification !== "APPROVED") throw new Error("Account not verified by admin");
 
   await prisma.user.update({
     where: { id: user.id },
@@ -130,12 +128,35 @@ export const deactivateUser = async (userId: string) => {
 }
 
 export const approveUser = async (userId: string) => {
-  return prisma.user.update({
+  const user = await prisma.user.update({
     where: { id: userId },
     data: {
       verification: VerificationStatus.APPROVED,
     },
   });
+
+  (async () => {
+    try {
+      await sendResetEmail(user?.email, "Your account has been approved by admin. You can now log in and start using our services.");
+    } catch (error) {
+      console.error("Error sending email:", error);
+    }
+  })();
+
+  (async () => {
+    try {
+      await NotificationService.notifyUser(
+        userId,
+        "Your application has been approved",
+        `Congratulations ${user?.fullName}, your account has been approved.`,
+        "ALERT"
+      );
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  })();
+
+  return user;
 };
 
 export const rejectUser = async (userId: string) => {

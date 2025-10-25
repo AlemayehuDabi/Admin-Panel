@@ -2,7 +2,6 @@ import { Router } from "express";
 import { uploadProfilePicture, uploadNationalId, uploadCompanyFileController, uploadWorkerFileController, uploadPaymentReceipt } from "./storage.controller";
 import { upload } from "../../middlewares/upload";
 import validate from "../../middlewares/validate";
-import { authenticate } from "../../middlewares/authMiddleware";
 import {
     uploadFileValidation,
     uploadProfilePictureValidation,
@@ -196,6 +195,6 @@ router.post("/worker/national-id", upload.single("file"), validate(uploadProfile
  *         description: Server error
  */
 
-router.post("/payment-receipt", authenticate, upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadPaymentReceipt);
+router.post("/payment-receipt", upload.single("file"), validate(uploadProfilePictureValidation, "file"), uploadPaymentReceipt);
 
 export default router;

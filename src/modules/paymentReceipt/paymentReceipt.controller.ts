@@ -2,11 +2,14 @@
 import { Request, Response, NextFunction } from "express";
 import { successResponse, errorResponse } from "../../utils/response";
 import * as service from "./paymentReceipt.service";
+import { Param } from "@prisma/client/runtime/library";
 
 export const createReceipt = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // assume requireAuth has set req.user.id
-    const userId = (req as any).user.id as string;
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json(errorResponse("User ID is required"));
+    }
     const dto = req.body;
     const created = await service.createReceipt(userId, dto);
     return res.status(201).json(successResponse(created));

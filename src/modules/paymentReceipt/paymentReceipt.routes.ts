@@ -1,7 +1,7 @@
 // src/modules/paymentReceipt/paymentReceipt.routes.ts
 import { Router } from "express";
 import * as controller from "./paymentReceipt.controller";
-import { createReceiptSchema, adminRejectSchema, idSchema } from "./paymentReceipt.validation";
+import { createReceiptSchema, adminRejectSchema, idSchema, userIdSchema } from "./paymentReceipt.validation";
 import { authorize } from "../../middlewares/authorize";
 import { authenticate } from "../../middlewares/authMiddleware";
 import validate from "../../middlewares/validate";
@@ -15,17 +15,12 @@ const router = Router();
  *     description: Payment receipt management (users and admin)
  */
 
-// User routes
-router.use(authenticate); // all routes below require authentication
-
 /**
  * @openapi
- * /receipts:
+ * /receipts/{userId}:
  *   post:
  *     tags: [PaymentReceipt]
  *     summary: Create a payment receipt (user)
- *     security:
- *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -40,7 +35,10 @@ router.use(authenticate); // all routes below require authentication
  *             schema:
  *               $ref: '#/components/schemas/PaymentReceipt'
  */
-router.post("/",  validate(createReceiptSchema,"body"), controller.createReceipt);
+router.post("/:userId", validate(userIdSchema, "params"), validate(createReceiptSchema,"body"), controller.createReceipt);
+
+// User routes
+router.use(authenticate); // all routes below require authentication
 
 /**
  * @openapi

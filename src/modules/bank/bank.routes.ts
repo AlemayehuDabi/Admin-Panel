@@ -14,10 +14,6 @@ const router = Router();
  *     description: Bank management (admin only)
  */
 
-// All bank routes are admin-only
-// router.use(authorize("ADMIN"));
-router.use(authenticate);
-
 /**
  * @openapi
  * /banks:
@@ -46,6 +42,10 @@ router.use(authenticate);
  *                 $ref: '#/components/schemas/Bank'
  */
 router.get("/", controller.listBanks);
+
+// All bank routes are admin-only
+// router.use(authorize("ADMIN"));
+router.use(authenticate);
 
 /**
  * @openapi
